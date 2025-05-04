@@ -1,0 +1,25 @@
+{
+  "name": "connect",
+  "version": "1.0.0",
+  "description": "Devices Connect",
+  "main": "main.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && electron .\"",
+    "start:react": "cd src/frontend && npm run dev",
+    "build": "cd src/frontend && npm run build",
+    "electron": "electron ."
+  },
+  "author": "Dasun I",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^36.1.0",
+    "electron-is-dev": "^3.0.1"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7",
+    "wait-on": "^8.0.3"
+  }
+}
