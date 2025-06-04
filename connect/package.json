@@ -6,20 +6,43 @@
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && electron .\"",
     "start:react": "cd src/frontend && npm run dev",
-    "build": "cd src/frontend && npm run build",
+    "build": "npm run build:react && electron-builder",
+    "build:react": "cd src/frontend && npm run build",
     "electron": "electron ."
   },
   "author": "Dasun I",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^36.1.0",
+    "electron": "^25.9.8",
+    "electron-builder": "^26.0.12",
     "electron-is-dev": "^3.0.1"
   },
   "dependencies": {
     "concurrently": "^9.1.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "react-router-dom": "^7.6.1",
     "sqlite3": "^5.1.7",
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.yourapp.connect",
+    "productName": "ADB Connect",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/frontend/dist/**/*",
+      "src/backend/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "src/frontend/public/icon.ico"
+    }
   }
 }
