@@ -16,6 +16,7 @@
     "electron": "^25.9.8",
     "electron-builder": "^26.0.12",
     "electron-is-dev": "^3.0.1"
+
   },
   "dependencies": {
     "concurrently": "^9.1.2",
