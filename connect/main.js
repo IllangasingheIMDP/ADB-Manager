@@ -1,7 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
-const isDev = require('electron-is-dev');
+
+
+const { stdout, stderr } = require('process');
+const { rejects } = require('assert');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -14,6 +17,8 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+
+  const isDev = !app.isPackaged;
 
   win.loadURL(
     isDev
@@ -45,6 +50,36 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
     });
   });
 });
+ipcMain.handle('adb:shell',async(event,deviceId,command) => {
+  return new Promise((resolve,reject)=>{
+    const adbCommand = `adb -s ${deviceId} shell ${command}`;
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        console.log(`Error executing command: ${error.message}`);
+        reject(error.message);
+        return;
+      }
+      if(stderr){
+        console.log(`Error output: ${stderr}`);
+        reject(stderr);
+        return;
+      }
+      resolve(stdout);
+    })
+  });
+})
+ipcMain.handle('tcpip',async(event,id,port)=>{
+  return new Promise((resolve,reject)=>{
+    exec(`adb -s ${id} tcpip ${port}`,(error,stdout,stderr)=>{
+      if(error){
+        reject(error);
+      }else{
+        resolve(stdout)
+      }
+    })
+  })
+
+})
 
 require('./src/backend/server');
 

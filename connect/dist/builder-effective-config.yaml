@@ -1,0 +1,17 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.yourapp.connect
+productName: ADB Connect
+files:
+  - filter:
+      - main.js
+      - preload.js
+      - src/frontend/dist/**/*
+      - src/backend/**/*
+      - node_modules/**/*
+win:
+  target:
+    - nsis
+  icon: src/frontend/public/icon.ico
+electronVersion: 25.9.8
