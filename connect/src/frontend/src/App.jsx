@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import DeviceList from './components/DeviceList';
 import ConnectDevice from './components/ConnectDevice';
 import Commands from './pages/Commands';
@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <HashRouter>
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
           <h1 className="text-4xl font-bold text-blue-600 mb-8">ADB Manager</h1>
           <Routes>
@@ -42,7 +42,7 @@ function App() {
             <Route path="/commands/:deviceId" element={<Commands />} />
           </Routes>
         </div>
-      </BrowserRouter>
+      </HashRouter>
     </ErrorBoundary>
   );
 }
