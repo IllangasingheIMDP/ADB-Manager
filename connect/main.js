@@ -1,7 +1,12 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
+<<<<<<< Updated upstream
 const isDev = require('electron-is-dev');
+=======
+const { stdout, stderr } = require('process');
+const { rejects } = require('assert');
+>>>>>>> Stashed changes
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -14,6 +19,8 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+
+  const isDev = !app.isPackaged;
 
   win.loadURL(
     isDev
@@ -33,6 +40,19 @@ ipcMain.handle('adb-devices', async () => {
     });
   });
 });
+
+ipcMain.handle('tcpip',async(event,id,port)=>{
+  return new Promise((resolve,reject)=>{
+    exec(`adb -s ${id} tcpip ${port}`,(error,stdout,stderr)=>{
+      if(error){
+        reject(error);
+      }else{
+        resolve(stdout)
+      }
+    })
+  })
+
+})
 
 ipcMain.handle('adb-connect', async (event, ip, port) => {
   return new Promise((resolve, reject) => {

@@ -12,8 +12,13 @@
   "author": "Dasun I",
   "license": "ISC",
   "devDependencies": {
+<<<<<<< Updated upstream
     "electron": "^36.1.0",
     "electron-is-dev": "^3.0.1"
+=======
+    "electron": "^25.9.8",
+    "electron-builder": "^26.0.12"
+>>>>>>> Stashed changes
   },
   "dependencies": {
     "concurrently": "^9.1.2",
