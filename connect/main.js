@@ -3,9 +3,10 @@ const path = require('path');
 const { exec } = require('child_process');
 
 
-const { stdout, stderr } = require('process');
+const { stdout, stderr, eventNames } = require('process');
 const { rejects } = require('assert');
 const { error } = require('console');
+const { promiseHooks } = require('v8');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -16,7 +17,11 @@ function createWindow() {
       contextIsolation: true,
       enableRemoteModule: false,
       nodeIntegration: false,
+      experimentalFeatures: true,
     },
+    backgroundColor: '#00000000',
+    transparent: true, // Enable transparency
+    // Optional: Remove window fr
   });
 
   const isDev = !app.isPackaged;
@@ -27,6 +32,20 @@ function createWindow() {
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
 }
+
+ipcMain.handle('adb-reconnect',async(event,deviceId)=>{
+  return new Promise((resolve,reject)=>{
+    const adbCommand=`adb disconnect ${deviceId} && adb connect ${deviceId}`
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error.message)
+      }else{
+        resolve(stdout)
+      }
+
+    })
+  })
+})
 
 ipcMain.handle('adb-push',async(event,deviceId,filepath)=>{
   return new Promise((resolve,reject)=>{
