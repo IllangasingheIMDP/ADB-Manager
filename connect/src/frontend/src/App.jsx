@@ -3,7 +3,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import DeviceList from './components/DeviceList';
 import ConnectDevice from './components/ConnectDevice';
 import Commands from './pages/Commands';
-
+import FileExplorer from './pages/FileExplorer';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -26,7 +26,7 @@ function App() {
   return (
     <ErrorBoundary>
       <HashRouter>
-        <div className="flex flex-col  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
+        <div className="flex flex-col h-full w-full  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
           <h1 className="text-4xl font-bold text-teal-600 mb-8 "
 
           >ADB Manager</h1>
@@ -58,6 +58,7 @@ function App() {
               </>
             } />
             <Route path="/commands/:deviceId" element={<Commands />} />
+            <Route path="/explorer/:deviceId" element={<FileExplorer />} />
           </Routes>
         </div>
       </HashRouter>

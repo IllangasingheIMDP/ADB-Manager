@@ -6,5 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   adbConnect: (ip, port) => ipcRenderer.invoke('adb-connect', ip, port),
   adbShell: (deviceId, command) => ipcRenderer.invoke('adb:shell', deviceId, command),
   adbPush: (deviceId,filepath)=>ipcRenderer.invoke('adb-push',deviceId,filepath),
-  adbReconnect:(deviceId)=>ipcRenderer.invoke('adb-reconnect',deviceId)
+  adbReconnect:(deviceId)=>ipcRenderer.invoke('adb-reconnect',deviceId),
+  adbPull:(deviceId,filepath)=>ipcRenderer.invoke('adb-pull',deviceId,filepath)
+
 });

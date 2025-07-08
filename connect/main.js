@@ -1,7 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
+const os = require('os');
 
+
+const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 const { stdout, stderr, eventNames } = require('process');
 const { rejects } = require('assert');
@@ -10,8 +13,9 @@ const { promiseHooks } = require('v8');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1024,
+    height: 768,
+    resizable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -45,6 +49,22 @@ ipcMain.handle('adb-reconnect',async(event,deviceId)=>{
 
     })
   })
+})
+
+ipcMain.handle('adb-pull',async(event,deviceId,filepath)=>{
+  return new Promise((resolve,reject)=>{
+    const adbCommand =`adb -s ${deviceId} pull ${filepath} ${downloadsPath} `
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error.message);
+      }else if(stderr){
+        reject(stderr);
+      }else{
+        resolve(stdout);
+      }
+  })
+})
+
 })
 
 ipcMain.handle('adb-push',async(event,deviceId,filepath)=>{

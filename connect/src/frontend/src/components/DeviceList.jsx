@@ -52,6 +52,9 @@ function DeviceList() {
   const handleCommandsClick = (deviceId) => {
     navigate(`/commands/${deviceId}`);
   };
+  const handleExplorerClick = (deviceId) => {
+    navigate(`/explorer/${deviceId}`);
+  };
 
   return (
     <div className="p-6">
@@ -103,6 +106,12 @@ function DeviceList() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-100 w-full text-left transition"
                       >
                         Reconnect
+                      </button>
+                      <button
+                        onClick={() => handleExplorerClick(device)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-100 w-full text-left transition"
+                      >
+                        File Explorer
                       </button>
                     </div>
                   </div>
