@@ -5,6 +5,7 @@ const { exec } = require('child_process');
 
 const { stdout, stderr } = require('process');
 const { rejects } = require('assert');
+const { error } = require('console');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -26,6 +27,27 @@ function createWindow() {
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
 }
+
+ipcMain.handle('adb-push',async(event,deviceId,filepath)=>{
+  return new Promise((resolve,reject)=>{
+    const destPath='/sdcard/Airdroid'
+    const adbCommand=`adb -s ${deviceId} push "${filepath}" "${destPath}"`
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error.message);
+      }else if(stderr){
+        reject(stderr);
+      }else{
+        resolve(stdout);
+      }
+
+    })
+
+  })
+
+
+
+})
 
 ipcMain.handle('adb-devices', async () => {
   return new Promise((resolve, reject) => {

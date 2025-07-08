@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import FileSend from './FileSend'; // Assuming FileSend is in the same directory
 function DeviceList() {
   const [devices, setDevices] = useState([]);
   const [error, setError] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
+  const [fileSendDevice, setFileSendDevice] = useState(null);
+
   const navigate = useNavigate();
 
   const fetchDevices = async () => {
@@ -25,6 +27,8 @@ function DeviceList() {
 
   useEffect(() => {
     fetchDevices();
+    const interval = setInterval(fetchDevices, 10000); // fetch every 10 seconds
+    return () => clearInterval(interval); // cleanup on unmount
   }, []);
 
   const handleMenuClick = (deviceId) => {
@@ -59,6 +63,15 @@ function DeviceList() {
                     >
                       Execute Shell Commands
                     </button>
+                     <button
+                      onClick={() => {
+                        setFileSendDevice(device);
+                        setActiveMenu(null);
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    >
+                      Send files
+                    </button>
                   </div>
                 </div>
               )}
@@ -66,12 +79,25 @@ function DeviceList() {
           </li>
         ))}
       </ul>
+        {}
+
+
       <button
         onClick={fetchDevices}
         className="mt-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
       >
         Refresh Devices
       </button>
+      {fileSendDevice && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-20">
+          <div className="bg-white rounded shadow-lg">
+            <FileSend
+              deviceId={fileSendDevice}
+              onClose={() => setFileSendDevice(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
