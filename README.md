@@ -14,7 +14,7 @@ ADB Connect is a modern Electron + React desktop application for managing Androi
 
 ## Screenshots
 
-![Main UI](./connect/15BADE18-6C90-4614-A406-D105E2EEBAFB.jpeg)
+![Main UI]![alt text](image.png)
 
 ## Getting Started
 
@@ -27,12 +27,15 @@ ADB Connect is a modern Electron + React desktop application for managing Androi
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/adb-connect.git
-   cd adb-connect/connect
+   git https://github.com/IllangasingheIMDP/Connect.git
+   cd connect
    ```
 2. **Install dependencies:**
    ```sh
    npm install
+   cd frontend/src
+   npm install
+   cd .. && cd ..
    ```
 3. **Run the application:**
    ```sh
@@ -75,5 +78,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-ADB Connect is maintained with ❤️ by [Your Name](https://github.com/yourusername).
+ADB Connect is maintained with ❤️ by [I.M.D.P.Illangasinghe](https://github.com/IllangasingheIMDP).
 
