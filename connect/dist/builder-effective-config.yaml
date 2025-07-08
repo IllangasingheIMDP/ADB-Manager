@@ -1,7 +1,7 @@
 directories:
   output: dist
   buildResources: build
-appId: com.yourapp.connect
+appId: com.adbconnect.connect
 productName: ADB Connect
 files:
   - filter:
@@ -13,5 +13,5 @@ files:
 win:
   target:
     - nsis
-  icon: src/frontend/public/icon.ico
+  icon: src/frontend/public/logo.ico
 electronVersion: 25.9.8

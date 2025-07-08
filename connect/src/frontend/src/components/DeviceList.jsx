@@ -84,32 +84,37 @@ function DeviceList() {
                   <span className="dots text-xl">⋮</span>
                 </button>
                 {activeMenu === device && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-emerald-200/90 ring-1 ring-black ring-opacity-5 z-50 overflow-y-auto">
-                    <div className="py-1">
+                  <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border border-[#04806b]/70 bg-white/90 backdrop-blur-md ring-1 ring-black ring-opacity-10 z-50 max-h-72 overflow-y-auto transition-all duration-200">
+                    {/* Caret */}
+                    <div className="absolute -top-2 right-6 w-4 h-4 bg-white/70 border-t border-l border-[#04806b]/30 rotate-45 z-10"></div>
+                    <div className="py-2">
                       <button
                         onClick={() => handleCommandsClick(device)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-100 w-full text-left transition"
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         Execute Shell Commands
                       </button>
+                      <div className="border-t border-emerald-100 my-1" />
                       <button
                         onClick={() => {
                           setFileSendDevice(device);
                           setActiveMenu(null);
                         }}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-100 w-full text-left transition"
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         Send files
                       </button>
+                      <div className="border-t border-emerald-100 my-1" />
                       <button
                         onClick={() => handleReconnectClick(device)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-100 w-full text-left transition"
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         Reconnect
                       </button>
+                      <div className="border-t border-emerald-100 my-1" />
                       <button
                         onClick={() => handleExplorerClick(device)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-100 w-full text-left transition"
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         File Explorer
                       </button>
