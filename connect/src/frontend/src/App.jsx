@@ -1,9 +1,9 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import DeviceList from './components/DeviceList';
 import ConnectDevice from './components/ConnectDevice';
 import Commands from './pages/Commands';
-
+import FileExplorer from './pages/FileExplorer';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -25,24 +25,43 @@ class ErrorBoundary extends React.Component {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-          <h1 className="text-4xl font-bold text-blue-600 mb-8">ADB Manager</h1>
+      <HashRouter>
+        <div className="flex flex-col h-full w-full  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
+          <h1 className="text-4xl font-bold text-teal-600 mb-8 "
+
+          >ADB Manager</h1>
           <Routes>
             <Route path="/" element={
               <>
-                <div className="w-full max-w-md">
-                  <ConnectDevice />
+                <div
+                  className="w-full hover:scale-105 transition-transform duration-200 max-w-md rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-visible"
+                >
+                  <div
+                    className="absolute rounded-2xl inset-0 bg-emerald-800/10"
+                    style={{ backdropFilter: 'blur(8px)' }}
+                  ></div>
+                  <div className="relative z-10">
+                    <ConnectDevice />
+                  </div>
                 </div>
-                <div className="w-full max-w-md mt-8">
-                  <DeviceList />
+                <div
+                  className="w-full hover:scale-105 transition-transform duration-200 max-w-md rounded-2xl border border-white/20 shadow-emerald-800 shadow-md mt-16 relative overflow-vertical"
+                >
+                  <div
+                    className="absolute rounded-2xl inset-0 bg-emerald-800/10"
+                    style={{ backdropFilter: 'blur(15px)' }}
+                  ></div>
+                  <div className="relative z-10">
+                    <DeviceList />
+                  </div>
                 </div>
               </>
             } />
             <Route path="/commands/:deviceId" element={<Commands />} />
+            <Route path="/explorer/:deviceId" element={<FileExplorer />} />
           </Routes>
         </div>
-      </BrowserRouter>
+      </HashRouter>
     </ErrorBoundary>
   );
 }

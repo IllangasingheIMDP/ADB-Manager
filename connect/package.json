@@ -27,7 +27,7 @@
     "wait-on": "^8.0.3"
   },
   "build": {
-    "appId": "com.yourapp.connect",
+    "appId": "com.adbconnect.connect",
     "productName": "ADB Connect",
     "directories": {
       "output": "dist"
@@ -43,7 +43,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/frontend/public/icon.ico"
+      "icon": "src/frontend/public/logo.ico"
     }
   }
 }

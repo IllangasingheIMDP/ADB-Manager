@@ -1,21 +1,31 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
+const os = require('os');
 
 
-const { stdout, stderr } = require('process');
+const downloadsPath = path.join(os.homedir(), 'Downloads');
+
+const { stdout, stderr, eventNames } = require('process');
 const { rejects } = require('assert');
+const { error } = require('console');
+const { promiseHooks } = require('v8');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1024,
+    height: 768,
+    resizable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       enableRemoteModule: false,
       nodeIntegration: false,
+      experimentalFeatures: true,
     },
+    backgroundColor: '#00000000',
+    transparent: true, // Enable transparency
+    // Optional: Remove window fr
   });
 
   const isDev = !app.isPackaged;
@@ -26,6 +36,57 @@ function createWindow() {
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
 }
+
+ipcMain.handle('adb-reconnect',async(event,deviceId)=>{
+  return new Promise((resolve,reject)=>{
+    const adbCommand=`adb disconnect ${deviceId} && adb connect ${deviceId}`
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error.message)
+      }else{
+        resolve(stdout)
+      }
+
+    })
+  })
+})
+
+ipcMain.handle('adb-pull',async(event,deviceId,filepath)=>{
+  return new Promise((resolve,reject)=>{
+    const adbCommand =`adb -s ${deviceId} pull ${filepath} ${downloadsPath} `
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error.message);
+      }else if(stderr){
+        reject(stderr);
+      }else{
+        resolve(stdout);
+      }
+  })
+})
+
+})
+
+ipcMain.handle('adb-push',async(event,deviceId,filepath)=>{
+  return new Promise((resolve,reject)=>{
+    const destPath='/sdcard/Airdroid'
+    const adbCommand=`adb -s ${deviceId} push "${filepath}" "${destPath}"`
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error.message);
+      }else if(stderr){
+        reject(stderr);
+      }else{
+        resolve(stdout);
+      }
+
+    })
+
+  })
+
+
+
+})
 
 ipcMain.handle('adb-devices', async () => {
   return new Promise((resolve, reject) => {

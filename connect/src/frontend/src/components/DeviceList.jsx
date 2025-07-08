@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import FileSend from './FileSend';
 
 function DeviceList() {
   const [devices, setDevices] = useState([]);
   const [error, setError] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
+  const [fileSendDevice, setFileSendDevice] = useState(null);
+
   const navigate = useNavigate();
 
   const fetchDevices = async () => {
@@ -18,60 +21,136 @@ function DeviceList() {
       setDevices(devicesList);
       setError('');
     } catch (err) {
-      console.error('Error fetching devices:', err);  
+      console.error('Error fetching devices:', err);
       setError('Failed to fetch devices');
     }
   };
 
   useEffect(() => {
     fetchDevices();
+    const interval = setInterval(fetchDevices, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleMenuClick = (deviceId) => {
     setActiveMenu(activeMenu === deviceId ? null : deviceId);
   };
 
+  const handleReconnectClick = async (deviceId) => {
+    try{
+
+      await window.electronAPI.adbReconnect(deviceId);
+      setActiveMenu(null);
+      fetchDevices();
+    }catch (err) {
+      console.error('Error reconnecting device:', err);
+      setError('Failed to reconnect device');
+    }
+
+  }
+
   const handleCommandsClick = (deviceId) => {
     navigate(`/commands/${deviceId}`);
   };
+  const handleExplorerClick = (deviceId) => {
+    navigate(`/explorer/${deviceId}`);
+  };
 
   return (
-    <div className="p-6 bg-gray-100">
-      <h2 className="text-2xl font-bold mb-4">Connected Devices</h2>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] via-white text-transparent bg-clip-text"
+      style={{ backgroundClip: 'text', WebkitBackgroundClip: 'text' }}
+      >
+        Connected Devices
+      </h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <ul className="list-none pl-5">
-        {devices.map((device, index) => (
-          <li key={index} className="text-lg flex items-center justify-between mb-2">
-            <span>{device}</span>
-            <div className="relative">
-              <button
-                onClick={() => handleMenuClick(device)}
-                className="p-1 hover:bg-gray-200 rounded"
-              >
-                <span className="dots">⋮</span>
-              </button>
-              {activeMenu === device && (
-                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                  <div className="py-1">
-                    <button
-                      onClick={() => handleCommandsClick(device)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                    >
-                      Execute Shell Commands
-                    </button>
+      <div>
+        {devices.length === 0 && (
+          <div className="text-[#04806b] mb-4">No devices connected</div>
+        )}
+        <ul className="space-y-2">
+          {devices.map((device, index) => (
+            <li
+              key={index}
+              className="flex items-center justify-between bg-white/70 border rounded p-2 hover:bg-emerald-100 transition-transform duration-200 transform "
+            >
+              <span className="font-mono text-gray-800">{device}</span>
+              <div className="relative">
+                <button
+                  onClick={() => handleMenuClick(device)}
+                  className="p-1 hover:bg-emerald-100 rounded transition"
+                  title="Show actions"
+                >
+                  <span className="dots text-xl">⋮</span>
+                </button>
+                {activeMenu === device && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border border-[#04806b]/70 bg-white/90 backdrop-blur-md ring-1 ring-black ring-opacity-10 z-50 max-h-72 overflow-y-auto transition-all duration-200">
+                    {/* Caret */}
+                    <div className="absolute -top-2 right-6 w-4 h-4 bg-white/70 border-t border-l border-[#04806b]/30 rotate-45 z-10"></div>
+                    <div className="py-2">
+                      <button
+                        onClick={() => handleCommandsClick(device)}
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                      >
+                        Execute Shell Commands
+                      </button>
+                      <div className="border-t border-emerald-100 my-1" />
+                      <button
+                        onClick={() => {
+                          setFileSendDevice(device);
+                          setActiveMenu(null);
+                        }}
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                      >
+                        Send files
+                      </button>
+                      <div className="border-t border-emerald-100 my-1" />
+                      <button
+                        onClick={() => handleReconnectClick(device)}
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                      >
+                        Reconnect
+                      </button>
+                      <div className="border-t border-emerald-100 my-1" />
+                      <button
+                        onClick={() => handleExplorerClick(device)}
+                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                      >
+                        File Explorer
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
       <button
         onClick={fetchDevices}
-        className="mt-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        className="mt-6 w-full p-2 bg-emerald-700/70 text-white rounded hover:bg-teal-700 hover:scale-105 transition-transform duration-200"
       >
         Refresh Devices
       </button>
+      {fileSendDevice && (
+        <div className="absolute inset-0.5 flex items-center justify-center  ">
+          <div className="relative rounded-2xl border border-[#04806b]/30 shadow-emerald-800 shadow-lg bg-white/80 backdrop-blur-lg p-0">
+            <button
+              onClick={() => setFileSendDevice(null)}
+              className="absolute top-2 right-2 text-[#04806b] bg-white/80 rounded-full p-1 hover:bg-emerald-100 transition z-10"
+              title="Close"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <FileSend
+              deviceId={fileSendDevice}
+              onClose={() => setFileSendDevice(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -74,18 +74,20 @@ function ConnectDevice() {
   };
 
   return (
-    <div className="p-6 bg-gray-100">
-      <h2 className="text-2xl font-bold mb-4">Connect to Device</h2>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] via-white text-transparent bg-clip-text"
+      style={{ backgroundClip: 'text', WebkitBackgroundClip: 'text' }}
+      >Connect to device</h2>
       {!method && (
-        <div className="space-y-4">
+        <div className="space-y-4 flex flex-col items-center">
           <button
-            className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="w-1/2 p-2 bg-emerald-700/70  text-white rounded hover:bg-teal-700 hover:scale-105 transition-transform duration-200"
             onClick={() => setMethod('wifi')}
           >
             Connect via WiFi
           </button>
           <button
-            className="w-full p-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="w-1/2 p-2 bg-emerald-800/70 text-white rounded   hover:bg-teal-700 hover:scale-105 transition-transform duration-200"
             onClick={() => setMethod('usb')}
           >
             Connect via USB
@@ -100,7 +102,7 @@ function ConnectDevice() {
             placeholder="IP Address"
             value={ip}
             onChange={(e) => setIp(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border bg-emerald-100/50 border-[#04806b] rounded focus:ring-2 focus:ring-[#04806b] focus:outline-none"
             required
           />
           <input
@@ -108,18 +110,18 @@ function ConnectDevice() {
             placeholder="Port"
             value={port}
             onChange={(e) => setPort(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border bg-emerald-100/50 border-[#04806b] rounded focus:ring-2 focus:ring-[#04806b] focus:outline-none"
             required
           />
           <button
             type="submit"
-            className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="w-full p-2 bg-[#04806b] text-white rounded hover:bg-emerald-700 transition"
           >
             Connect
           </button>
           <button
             type="button"
-            className="w-full p-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            className="w-full p-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition"
             onClick={() => setMethod('')}
           >
             Back
@@ -129,22 +131,24 @@ function ConnectDevice() {
 
       {method === 'usb' && (
         <div className="mt-4">
-          <div className="font-semibold mb-2">USB connected devices</div>
+          <div className="font-semibold mb-2 text-[#04806b]">USB connected devices</div>
           <div>
-            {usbDevices.length === 0 && <div className="text-gray-500">No USB devices found</div>}
+            {usbDevices.length === 0 && (
+              <div className="text-gray-500 text-center">No USB devices found</div>
+            )}
             {usbDevices.map(deviceId => (
               <button
                 key={deviceId}
-                className="block w-full text-left p-2 mb-1 bg-white border rounded hover:bg-blue-100"
+                className="block w-full text-left p-2 mb-1 bg-white border border-[#04806b] rounded hover:bg-emerald-50 hover:border-emerald-700 transition"
                 onClick={() => handleUsbDeviceClick(deviceId)}
               >
-                {deviceId}
+                <span className="text-[#04806b]">{deviceId}</span>
               </button>
             ))}
           </div>
           <button
             type="button"
-            className="w-full p-2 mt-4 bg-gray-400 text-white rounded hover:bg-gray-500"
+            className="w-full p-2 mt-4 bg-gray-400 text-white rounded hover:bg-gray-500 transition"
             onClick={() => setMethod('')}
           >
             Back
@@ -152,7 +156,7 @@ function ConnectDevice() {
         </div>
       )}
 
-      {message && <p className="mt-4 text-lg">{message}</p>}
+      {message && <p className="mt-4 text-lg text-emerald-300">{message}</p>}
     </div>
   );
 }
