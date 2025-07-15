@@ -33,7 +33,12 @@ function DeviceList() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleMenuClick = (deviceId) => {
+  const handleDeviceClick = (deviceId) => {
+    navigate(`/device/${deviceId}`);
+  };
+
+  const handleMenuClick = (deviceId, event) => {
+    event.stopPropagation(); // Prevent device click when clicking menu
     setActiveMenu(activeMenu === deviceId ? null : deviceId);
   };
 
@@ -77,7 +82,7 @@ function DeviceList() {
   };
 
   return (
-    <div className="p-6">
+    <div className="w-full p-6">
       <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] via-white text-transparent bg-clip-text"
       style={{ backgroundClip: 'text', WebkitBackgroundClip: 'text' }}
       >
@@ -92,7 +97,8 @@ function DeviceList() {
           {devices.map((device, index) => (
             <li
               key={index}
-              className="flex items-center justify-between bg-white/70 border rounded p-2 hover:bg-emerald-100 transition-transform duration-200 transform "
+              className="flex items-center justify-between bg-white/70 border rounded p-2 hover:bg-emerald-100 transition-transform duration-200 transform cursor-pointer"
+              onClick={() => handleDeviceClick(device)}
             >
               <div className="flex items-center gap-2">
                 <span className="font-mono text-gray-800">{device}</span>
@@ -102,7 +108,7 @@ function DeviceList() {
               </div>
               <div className="relative">
                 <button
-                  onClick={() => handleMenuClick(device)}
+                  onClick={(e) => handleMenuClick(device, e)}
                   className="p-1 hover:bg-emerald-100 rounded transition"
                   title="Show actions"
                 >
@@ -114,7 +120,7 @@ function DeviceList() {
                     <div className="absolute -top-2 right-6 w-4 h-4 bg-white/70 border-t border-l border-[#04806b]/30 rotate-45 z-10"></div>
                     <div className="py-2">
                       <button
-                        onClick={() => handleCommandsClick(device)}m
+                        onClick={() => handleCommandsClick(device)}
                         className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         Execute Shell Commands

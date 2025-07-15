@@ -4,6 +4,7 @@ import DeviceList from './components/DeviceList';
 import ConnectDevice from './components/ConnectDevice';
 import Commands from './pages/Commands';
 import FileExplorer from './pages/FileExplorer';
+import Device from './pages/Device';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -57,8 +58,10 @@ function App() {
                 </div>
               </>
             } />
+            <Route path="/device/:deviceId" element={<Device />} />
             <Route path="/commands/:deviceId" element={<Commands />} />
             <Route path="/explorer/:deviceId" element={<FileExplorer />} />
+
           </Routes>
         </div>
       </HashRouter>

@@ -7,6 +7,7 @@ const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 // Store active scrcpy processes for each device
 const activeAudioStreams = new Map();
+const activeVideoStreams=new Map();
 
 // Get the correct scrcpy path based on platform and whether app is packaged
 function getScrcpyPath() {
@@ -56,6 +57,54 @@ function createWindow() {
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
 }
+
+ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
+  return new Promise((resolve,reject)=>{
+   try {
+       if (activeVideoStreams.has(deviceId)){
+        resolve('Video stream already active for this device')
+       }
+       const scrcpyPath = getScrcpyPath();
+       const fs =require('fs')
+       if (!fs.existsSync(scrcpyPath)){
+        reject('Scrcpy binary not found. Please check installation.');
+        return;
+       }
+       const scrcpyProcess=spawn(scrcpyPath,[
+        '--serial', deviceId
+        
+       ],{
+        cwd:path.dirname(scrcpyPath)
+       });
+       activeVideoStreams.set(deviceId,scrcpyProcess);
+       scrcpyProcess.stdout.on('data',(data)=>{
+        console.log(`Video stream stdout:${data}`)
+       })
+       scrcpyProcess.stderr.on('data', (data) => {
+        console.log(`Video stream stderr: ${data}`);
+      });
+
+      scrcpyProcess.on('close', (code) => {
+        console.log(`Video stream process exited with code ${code}`);
+        activeVideoStreams.delete(deviceId);
+      });
+       // Give it a moment to start
+      setTimeout(() => {
+        if (activeAudioStreams.has(deviceId)) {
+          resolve('Audio stream started successfully');
+        } else {
+          reject('Failed to start audio stream');
+        }
+      }, 2000);
+
+   } catch (error) {
+    reject(`Error starting Video stream: ${error.message}`);
+   }
+  })
+
+})
+
+
 
 // Audio streaming handlers
 ipcMain.handle('start-audio-stream', async (event, deviceId) => {
@@ -189,7 +238,7 @@ ipcMain.handle('adb-reconnect', async (event, deviceId) => {
 
 ipcMain.handle('adb-pull', async (event, deviceId, filepath) => {
   return new Promise((resolve, reject) => {
-    const adbCommand = `adb -s ${deviceId} pull "${filepath}" "${downloadsPath}"`;
+    const adbCommand = `adb -s ${deviceId} pull ${filepath} "${downloadsPath}"`;
     exec(adbCommand, (error, stdout, stderr) => {
       if (error) {
         reject(error.message);
