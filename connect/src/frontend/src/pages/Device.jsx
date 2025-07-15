@@ -7,6 +7,7 @@ const Device = () => {
   const navigate = useNavigate();
   const [deviceInfo, setDeviceInfo] = useState(null);
   const [audioStreaming, setAudioStreaming] = useState(false);
+  
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [showFileSend, setShowFileSend] = useState(false);
@@ -19,7 +20,7 @@ const Device = () => {
     try {
       setLoading(true);
       // Get device information
-      const result = await window.electronAPI.adbShell(deviceId, 'getprop ro.product.model && getprop ro.build.version.release && getprop ro.product.manufacturer');
+      const result = await window.electronAPI.adbShell(deviceId, `getprop ro.product.model && adb -s ${deviceId} shell getprop ro.build.version.release && adb -s ${deviceId} shell getprop ro.product.manufacturer`);
       const lines = result.trim().split('\n');
       setDeviceInfo({
         model: lines[0] || 'Unknown',
@@ -49,6 +50,14 @@ const Device = () => {
       setMessage('Failed to toggle audio stream: ' + err);
     }
   };
+
+   const handleVideoOn = async()=>{
+    try {
+        await window.electronAPI.startVideoStream(deviceId);
+    } catch (error) {
+        console.log('Failed to start video stream: ' + error.message);
+    }
+   }
 
   const handleReconnect = async () => {
     try {
@@ -98,7 +107,7 @@ const Device = () => {
       title: 'Screen Mirror',
       description: 'Mirror device screen (requires scrcpy)',
       icon: '📱',
-      action: () => setMessage('Screen mirror - Coming soon!'),
+      action: handleVideoOn,
       color: 'from-indigo-500 to-blue-500'
     },
     {
@@ -111,7 +120,7 @@ const Device = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat py-8 px-4">
+    <div className=" flex items-center justify-center  py-8 px-4 scroll">
       <div className="w-full max-w-4xl">
         {/* Header Card */}
         <div className="rounded-2xl border border-white/20 shadow-emerald-800 shadow-lg mb-8 relative overflow-hidden">
@@ -173,41 +182,7 @@ const Device = () => {
             )}
           </div>
         </div>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featureCards.map((feature, index) => (
-            <div
-              key={index}
-              className="rounded-2xl border border-white/20 shadow-emerald-800 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer relative overflow-hidden group"
-              onClick={feature.action}
-            >
-              <div
-                className="absolute inset-0 bg-emerald-800/10 group-hover:bg-emerald-800/15 transition-all duration-300"
-                style={{ backdropFilter: 'blur(10px)' }}
-              ></div>
-              <div className="relative z-10 p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-2xl shadow-lg`}>
-                    {feature.icon}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#FFF6F5]">{feature.title}</h3>
-                  </div>
-                </div>
-                <p className="text-sm text-emerald-300 leading-relaxed">{feature.description}</p>
-                <div className="mt-4 flex justify-end">
-                  <span className="text-[#0d9780] text-sm font-medium group-hover:text-emerald-600 transition-colors">
-                    Open →
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick Actions Bar */}
-        <div className="mt-8 rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-hidden">
+            <div className="mt-8 rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-hidden">
           <div
             className="absolute inset-0 bg-emerald-800/10"
             style={{ backdropFilter: 'blur(15px)' }}
@@ -252,6 +227,40 @@ const Device = () => {
             </div>
           </div>
         </div>
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 mt-8 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featureCards.map((feature, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-white/20 shadow-emerald-800 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer relative overflow-hidden group"
+              onClick={feature.action}
+            >
+              <div
+                className="absolute inset-0 bg-emerald-800/10 group-hover:bg-emerald-800/15 transition-all duration-300"
+                style={{ backdropFilter: 'blur(10px)' }}
+              ></div>
+              <div className="relative z-10 p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-2xl shadow-lg`}>
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#FFF6F5]">{feature.title}</h3>
+                  </div>
+                </div>
+                <p className="text-sm text-emerald-300 leading-relaxed">{feature.description}</p>
+                <div className="mt-4 flex justify-end">
+                  <span className="text-[#0d9780] text-sm font-medium group-hover:text-emerald-600 transition-colors">
+                    Open →
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick Actions Bar */}
+        
 
         {/* FileSend Modal */}
         {showFileSend && (

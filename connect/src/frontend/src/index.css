@@ -7,3 +7,4 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;                  /* Chrome, Safari, Opera */
 }
+::-webkit-scrollbar { width: 0px; }
