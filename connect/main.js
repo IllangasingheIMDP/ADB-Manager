@@ -189,7 +189,7 @@ ipcMain.handle('adb-reconnect', async (event, deviceId) => {
 
 ipcMain.handle('adb-pull', async (event, deviceId, filepath) => {
   return new Promise((resolve, reject) => {
-    const adbCommand = `adb -s ${deviceId} pull "${filepath}" "${downloadsPath}"`;
+    const adbCommand = `adb -s ${deviceId} pull ${filepath} "${downloadsPath}"`;
     exec(adbCommand, (error, stdout, stderr) => {
       if (error) {
         reject(error.message);

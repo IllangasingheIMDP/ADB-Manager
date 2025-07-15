@@ -46,7 +46,8 @@ function Commands() {
           </h2>
           <button
             className="text-lg bg-[#04806b] text-white px-6 py-2 rounded-2xl mb-6 border-b-2 border-emerald-900 hover:bg-emerald-700 transition"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(-1)}
+
           >
             Back
           </button>

@@ -83,11 +83,11 @@ const fetchEntries = async (path) => {
   };
 
   return (
-    <div className="min-h-screen w-3/4 flex items-center justify-center bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat py-8 hide-scrollbar">
+    <div className="h-full w-3/4 flex items-center justify-center   py-8 hide-scrollbar">
       <div className="w-full max-w-2xl rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-hidden">
         <div className="absolute inset-0 bg-emerald-800/10" style={{ backdropFilter: 'blur(15px)' }}></div>
-        <div className="relative z-10 p-8">
-          <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#04806b] to-white text-transparent bg-clip-text"
+        <div className="relative z-10 h-[70vh] p-8">
+          <h2 className="text-2xl font-bold m-4 bg-gradient-to-r from-[#04806b] to-white text-transparent bg-clip-text"
             style={{ backgroundClip: 'text', WebkitBackgroundClip: 'text' }}>
             File Explorer: <span className="text-[#04806b]">{deviceId}</span>
           </h2>
