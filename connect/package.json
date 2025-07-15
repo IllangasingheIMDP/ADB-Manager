@@ -39,6 +39,13 @@
       "src/backend/**/*",
       "node_modules/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "bin/",
+        "to": "bin/",
+        "filter": ["**/*"]
+      }
+    ],
     "win": {
       "target": [
         "nsis"

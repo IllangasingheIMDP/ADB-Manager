@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   adbShell: (deviceId, command) => ipcRenderer.invoke('adb:shell', deviceId, command),
   adbPush: (deviceId,filepath)=>ipcRenderer.invoke('adb-push',deviceId,filepath),
   adbReconnect:(deviceId)=>ipcRenderer.invoke('adb-reconnect',deviceId),
-  adbPull:(deviceId,filepath)=>ipcRenderer.invoke('adb-pull',deviceId,filepath)
+  adbPull:(deviceId,filepath)=>ipcRenderer.invoke('adb-pull',deviceId,filepath),
+  startAudioStream: (deviceId) => ipcRenderer.invoke('start-audio-stream', deviceId),
+  stopAudioStream: (deviceId) => ipcRenderer.invoke('stop-audio-stream', deviceId),
+  checkScrcpy: () => ipcRenderer.invoke('check-scrcpy')
 
 });

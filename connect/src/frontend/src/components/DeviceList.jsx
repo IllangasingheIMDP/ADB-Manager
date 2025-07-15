@@ -7,6 +7,7 @@ function DeviceList() {
   const [error, setError] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [fileSendDevice, setFileSendDevice] = useState(null);
+  const [audioStreaming, setAudioStreaming] = useState({}); // Track audio streaming state per device
 
   const navigate = useNavigate();
 
@@ -38,7 +39,6 @@ function DeviceList() {
 
   const handleReconnectClick = async (deviceId) => {
     try{
-
       await window.electronAPI.adbReconnect(deviceId);
       setActiveMenu(null);
       fetchDevices();
@@ -46,14 +46,34 @@ function DeviceList() {
       console.error('Error reconnecting device:', err);
       setError('Failed to reconnect device');
     }
-
   }
 
   const handleCommandsClick = (deviceId) => {
     navigate(`/commands/${deviceId}`);
   };
+
   const handleExplorerClick = (deviceId) => {
     navigate(`/explorer/${deviceId}`);
+  };
+
+  const handleAudioToggle = async (deviceId) => {
+    const isCurrentlyStreaming = audioStreaming[deviceId];
+    
+    try {
+      if (isCurrentlyStreaming) {
+        // Stop audio streaming
+        await window.electronAPI.stopAudioStream(deviceId);
+        setAudioStreaming(prev => ({ ...prev, [deviceId]: false }));
+      } else {
+        // Start audio streaming
+        await window.electronAPI.startAudioStream(deviceId);
+        setAudioStreaming(prev => ({ ...prev, [deviceId]: true }));
+      }
+      setActiveMenu(null);
+    } catch (err) {
+      console.error('Error toggling audio stream:', err);
+      setError('Failed to toggle audio stream');
+    }
   };
 
   return (
@@ -74,7 +94,12 @@ function DeviceList() {
               key={index}
               className="flex items-center justify-between bg-white/70 border rounded p-2 hover:bg-emerald-100 transition-transform duration-200 transform "
             >
-              <span className="font-mono text-gray-800">{device}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-gray-800">{device}</span>
+                {audioStreaming[device] && (
+                  <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full">🎵 Audio On</span>
+                )}
+              </div>
               <div className="relative">
                 <button
                   onClick={() => handleMenuClick(device)}
@@ -89,7 +114,7 @@ function DeviceList() {
                     <div className="absolute -top-2 right-6 w-4 h-4 bg-white/70 border-t border-l border-[#04806b]/30 rotate-45 z-10"></div>
                     <div className="py-2">
                       <button
-                        onClick={() => handleCommandsClick(device)}
+                        onClick={() => handleCommandsClick(device)}m
                         className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         Execute Shell Commands
@@ -103,6 +128,17 @@ function DeviceList() {
                         className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
                       >
                         Send files
+                      </button>
+                      <div className="border-t border-emerald-100 my-1" />
+                      <button
+                        onClick={() => handleAudioToggle(device)}
+                        className={`block w-full px-4 py-2 text-sm font-medium rounded-md transition ${
+                          audioStreaming[device] 
+                            ? 'text-red-700 hover:bg-red-100' 
+                            : 'text-gray-800 hover:bg-emerald-200/70 hover:text-[#04806b]'
+                        }`}
+                      >
+                        {audioStreaming[device] ? ' Stop Audio Stream' : 'Start Audio Stream'}
                       </button>
                       <div className="border-t border-emerald-100 my-1" />
                       <button
