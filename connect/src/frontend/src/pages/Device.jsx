@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import FileSend from './FileSend';
+import FileSend from '../components/FileSend';
+
 const Device = () => {
   const { deviceId } = useParams();
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const Device = () => {
   const [audioStreaming, setAudioStreaming] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [showFileSend, setShowFileSend] = useState(false);
 
   useEffect(() => {
     fetchDeviceInfo();
@@ -17,7 +19,7 @@ const Device = () => {
     try {
       setLoading(true);
       // Get device information
-      const result = await window.electronAPI.adbShell(deviceId, `getprop ro.product.model && adb -s ${deviceId} shell getprop ro.build.version.release && adb -s ${deviceId} shell getprop ro.product.manufacturer`);
+      const result = await window.electronAPI.adbShell(deviceId, 'getprop ro.product.model && getprop ro.build.version.release && getprop ro.product.manufacturer');
       const lines = result.trim().split('\n');
       setDeviceInfo({
         model: lines[0] || 'Unknown',
@@ -59,6 +61,10 @@ const Device = () => {
     }
   };
 
+  const handleFileSend = () => {
+    setShowFileSend(true);
+  };
+
   const featureCards = [
     {
       title: 'Shell Commands',
@@ -85,7 +91,7 @@ const Device = () => {
       title: 'Send Files',
       description: 'Transfer files from PC to device',
       icon: '📤',
-      action: () => setMessage('File send feature - Coming soon!'),
+      action: handleFileSend,
       color: 'from-orange-500 to-yellow-500'
     },
     {
@@ -222,6 +228,12 @@ const Device = () => {
                 Files
               </button>
               <button
+                onClick={handleFileSend}
+                className="px-4 py-2 rounded-lg bg-[#04806b]/20 text-emerald-300 hover:bg-emerald-500/30 transition backdrop-blur-sm text-sm"
+              >
+                Send Files
+              </button>
+              <button
                 onClick={handleAudioToggle}
                 className={`px-4 py-2 rounded-lg transition backdrop-blur-sm text-sm ${
                   audioStreaming 
@@ -240,6 +252,27 @@ const Device = () => {
             </div>
           </div>
         </div>
+
+        {/* FileSend Modal */}
+        {showFileSend && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+            <div className="relative rounded-2xl border border-[#04806b]/30 shadow-emerald-800 shadow-lg bg-white/80 backdrop-blur-lg p-0">
+              <button
+                onClick={() => setShowFileSend(false)}
+                className="absolute top-2 right-2 text-[#04806b] bg-white/80 rounded-full p-1 hover:bg-emerald-100 transition z-10"
+                title="Close"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <FileSend
+                deviceId={deviceId}
+                onClose={() => setShowFileSend(false)}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
