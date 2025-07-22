@@ -45,7 +45,7 @@ function Commands() {
 
   return (
     
-      <div className="w-full max-w-4xl rounded-2xl border border-emerald-400/40 shadow-emerald-800 shadow-lg relative overflow-hidden">
+      <div className="w-full font-custom2 max-w-4xl rounded-2xl border border-emerald-400/40 shadow-emerald-800 shadow-lg relative overflow-hidden">
         <div
           className="absolute inset-0 bg-emerald-900/20 rounded-2xl"
           style={{ backdropFilter: 'blur(12px)' }}

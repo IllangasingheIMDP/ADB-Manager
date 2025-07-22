@@ -89,7 +89,7 @@ function DeviceList() {
 
   return (
     <div className="w-full p-6">
-      <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] via-white text-transparent bg-clip-text"
+      <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] to-emerald-400 text-transparent bg-clip-text"
       style={{ backgroundClip: 'text', WebkitBackgroundClip: 'text' }}
       >
         Connected Devices

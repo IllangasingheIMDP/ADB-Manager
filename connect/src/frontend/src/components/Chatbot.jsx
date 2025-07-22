@@ -168,7 +168,7 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 font-custom2 right-6 z-50">
       {/* Chat Window */}
       {isOpen && (
         <div 

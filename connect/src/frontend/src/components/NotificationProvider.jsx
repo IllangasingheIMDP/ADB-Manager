@@ -61,7 +61,7 @@ export const NotificationProvider = ({ children }) => {
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      <div className="notification-container">
+      <div className="notification-container font-custom2">
         {notifications.map((notification, index) => (
           <div
             key={notification.id}

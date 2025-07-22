@@ -129,7 +129,7 @@ const Device = () => {
     },
     {
       title: 'Screen Mirror',
-      description: 'Mirror device screen (requires scrcpy)',
+      description: 'Mirror device screen',
       icon: <FiMonitor className="w-6 h-6" />,
       action: handleVideoOn,
       color: 'from-indigo-500 to-blue-500'
@@ -144,7 +144,7 @@ const Device = () => {
   ];
 
   return (
-    <div className=" flex items-center justify-center  py-8 px-4 scroll">
+    <div className=" flex font-custom2 items-center justify-center  py-8 px-4 scroll">
       <div className="w-full max-w-4xl">
         {/* Header Card */}
         <div className="rounded-2xl border border-emerald-400/40 shadow-emerald-800 shadow-lg mb-8 relative overflow-hidden">

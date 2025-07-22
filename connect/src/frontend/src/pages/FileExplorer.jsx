@@ -94,7 +94,7 @@ const fetchEntries = async (path) => {
   };
 
   return (
-    <div className="h-full w-3/4 flex items-center justify-center   py-8 hide-scrollbar">
+    <div className="h-full font-custom2 w-3/4 flex items-center justify-center   py-8 hide-scrollbar">
       <div className="w-full max-w-2xl rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-hidden">
         <div className="absolute inset-0 bg-emerald-800/10" style={{ backdropFilter: 'blur(15px)' }}></div>
         <div className="relative z-10 h-[70vh] p-8">

@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         'custom': ['CustomFont', 'monospace'],
+        'custom2':['CustomFont2','monospace'],
         'poppins': ['Poppins', 'sans-serif'],
         'mono': ['CustomFont', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
