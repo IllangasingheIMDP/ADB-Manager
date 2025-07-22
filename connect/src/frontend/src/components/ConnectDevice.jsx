@@ -74,10 +74,20 @@ function ConnectDevice() {
     showSuccess('Switching device to TCP/IP mode...');
     try {
       await window.electronAPI.adbTcpip(deviceId, 5555);
-      showSuccess('Getting device IP from WiFi interface...');
+      showSuccess('Getting device IP address...');
       await delay(5000);
-      const ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip -f inet addr show wlan0');
-      const deviceIp = extractIpFromIpAddr(ipAddrOutput);
+      
+      // First try the specific wlan0 interface (for external WiFi networks)
+      let ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip -f inet addr show wlan0');
+      let deviceIp = extractIpFromIpAddr(ipAddrOutput);
+      
+      // If no IP found on wlan0, try all interfaces (for hotspot scenarios)
+      if (!deviceIp) {
+        showSuccess('Checking all network interfaces...');
+        ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip addr');
+        deviceIp = extractIpFromIpAddr(ipAddrOutput);
+      }
+      
       if (!deviceIp) {
         const errorMsg = 'Could not find a valid IP address for this device.';
         showError(errorMsg);
