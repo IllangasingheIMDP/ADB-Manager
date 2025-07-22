@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileSend from '../components/FileSend';
+import DeviceInfo from '../components/DeviceInfo';
 import { useNotification } from '../hooks/useNotification';
 import { getErrorMessage, getSuccessMessage } from '../utils/errorHandler';
 import { 
@@ -25,6 +26,7 @@ const Device = () => {
   
   const [loading, setLoading] = useState(true);
   const [showFileSend, setShowFileSend] = useState(false);
+  const [showDeviceInfo, setShowDeviceInfo] = useState(false);
 
   const { showSuccess, showError } = useNotification();
 
@@ -98,6 +100,10 @@ const Device = () => {
     setShowFileSend(true);
   };
 
+  const handleDeviceInfo = () => {
+    setShowDeviceInfo(true);
+  };
+
   const featureCards = [
     {
       title: 'Shell Commands',
@@ -138,7 +144,7 @@ const Device = () => {
       title: 'Device Info',
       description: 'View detailed device information',
       icon: <FiInfo className="w-6 h-6" />,
-      action: () => showSuccess('Detailed info feature - Coming soon!'),
+      action: handleDeviceInfo,
       color: 'from-gray-500 to-slate-500'
     }
   ];
@@ -238,6 +244,12 @@ const Device = () => {
               >
                 Reconnect
               </button>
+              <button
+                onClick={handleDeviceInfo}
+                className="px-4 py-2 rounded-lg bg-gray-500/20 text-gray-300 hover:bg-gray-500/30 transition backdrop-blur-sm text-sm border border-gray-400/30"
+              >
+                Device Info
+              </button>
             </div>
           </div>
         </div>
@@ -297,6 +309,18 @@ const Device = () => {
                   onClose={() => setShowFileSend(false)}
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* DeviceInfo Modal */}
+        {showDeviceInfo && (
+          <div className="fixed inset-0 flex items-center justify-center  bg-black/40 z-50 p-4">
+            <div className="relative w-full h-full overflow-auto">
+              <DeviceInfo
+                deviceId={deviceId}
+                onClose={() => setShowDeviceInfo(false)}
+              />
             </div>
           </div>
         )}
