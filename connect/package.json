@@ -53,12 +53,6 @@
         "nsis"
       ],
       "icon": "src/frontend/public/logo.ico"
-    },
-    "mac": {
-      "icon": "src/frontend/public/logo.ico"
-    },
-    "linux": {
-      "icon": "src/frontend/public/logo.ico"
     }
   }
 }
