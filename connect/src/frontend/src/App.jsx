@@ -5,13 +5,14 @@ import ConnectDevice from './components/ConnectDevice';
 import Commands from './pages/Commands';
 import FileExplorer from './pages/FileExplorer';
 import Device from './pages/Device';
+import { NotificationProvider } from './components/NotificationProvider';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -26,8 +27,9 @@ class ErrorBoundary extends React.Component {
 function App() {
   return (
     <ErrorBoundary>
-      <HashRouter>
-        <div className="flex flex-col h-full w-full  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
+      <NotificationProvider>
+        <HashRouter>
+          <div className="flex flex-col h-full w-full  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
           <h1 className="text-4xl font-bold text-teal-600 mb-8 "
 
           >ADB Manager</h1>
@@ -65,6 +67,7 @@ function App() {
           </Routes>
         </div>
       </HashRouter>
+    </NotificationProvider>
     </ErrorBoundary>
   );
 }

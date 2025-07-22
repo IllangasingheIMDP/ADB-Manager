@@ -1,3 +1,4 @@
 /connect/node_modules
 /connect/src/frontend/node_modules
 dist
+connect/.env

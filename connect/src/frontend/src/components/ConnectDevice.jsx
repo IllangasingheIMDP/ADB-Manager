@@ -1,6 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNotification } from '../hooks/useNotification';
+import { getErrorMessage, getSuccessMessage } from '../utils/errorHandler';
 
 function extractIpFromIpAddr(output) {
+  // Handle new format: "inet 10.10.28.76/19 brd ..."
+  const match = output.match(/inet\s+(\d+\.\d+\.\d+\.\d+)\/\d+/);
+  if (match) {
+    const ip = match[1];
+    // Filter out localhost and only accept private network ranges
+    if (!ip.startsWith('127.') && (ip.startsWith('192.') || ip.startsWith('10.') || ip.startsWith('172.'))) {
+      return ip;
+    }
+  }
+  
+  // Fallback to old format for compatibility
   const matches = output.match(/inet (\d+\.\d+\.\d+\.\d+)/g) || [];
   const ips = matches
     .map(m => m.replace('inet ', ''))
@@ -15,39 +28,46 @@ function ConnectDevice() {
   const [message, setMessage] = useState('');
   const [usbDevices, setUsbDevices] = useState([]);
 
+  const { showSuccess, showError } = useNotification();
+
+  const fetchUsbDevices = useCallback(async () => {
+    try {
+      const result = await window.electronAPI.adbDevices();
+      const devicesList = result
+        .split('\n')
+        .slice(1)
+        .filter(line => {
+          const id = line.split('\t')[0];
+          return (
+            line.trim() !== '' &&
+            line.includes('device') &&
+            !/^\d{1,3}(\.\d{1,3}){3}:\d+$/.test(id)
+          );
+        })
+        .map(line => line.split('\t')[0]);
+      setUsbDevices(devicesList);
+    } catch (err) {
+      setUsbDevices([]);
+      showError(getErrorMessage(err.message));
+    }
+  }, [showError]);
+
   useEffect(() => {
     if (method === 'usb') {
-      const fetchDevices = async () => {
-        try {
-          const result = await window.electronAPI.adbDevices();
-          const devicesList = result
-            .split('\n')
-            .slice(1)
-            .filter(line => {
-              const id = line.split('\t')[0];
-              return (
-                line.trim() !== '' &&
-                line.includes('device') &&
-                !/^\d{1,3}(\.\d{1,3}){3}:\d+$/.test(id)
-              );
-            })
-            .map(line => line.split('\t')[0]);
-          setUsbDevices(devicesList);
-        } catch (err) {
-          setUsbDevices([]);
-        }
-      };
-      fetchDevices();
+      fetchUsbDevices();
     }
-  }, [method]);
+  }, [method, fetchUsbDevices]);
 
   const handleConnect = async (e) => {
     e.preventDefault();
     try {
       const result = await window.electronAPI.adbConnect(ip, port);
       setMessage(result);
+      showSuccess(getSuccessMessage('connect', result));
     } catch (err) {
-      setMessage(`Connection failed: ${err.message}`);
+      const errorMsg = getErrorMessage(err.message);
+      setMessage(errorMsg);
+      showError(errorMsg);
     }
   };
 
@@ -57,19 +77,24 @@ function ConnectDevice() {
     setMessage('Switching device to TCP/IP mode...');
     try {
       await window.electronAPI.adbTcpip(deviceId, 5555);
-      setMessage('Getting device IP in TCP/IP mode...');
+      setMessage('Getting device IP from WiFi interface...');
       await delay(5000);
-      const ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip addr');
+      const ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip -f inet addr show wlan0');
       const deviceIp = extractIpFromIpAddr(ipAddrOutput);
       if (!deviceIp) {
-        setMessage('Could not find a valid IP address for this device.');
+        const errorMsg = 'Could not find a valid IP address for this device.';
+        setMessage(errorMsg);
+        showError(errorMsg);
         return;
       }
       setMessage(`Connecting to ${deviceIp}:5555 ...`);
       const connectResult = await window.electronAPI.adbConnect(deviceIp, '5555');
       setMessage(connectResult);
+      showSuccess(getSuccessMessage('tcpip', connectResult));
     } catch (err) {
-      setMessage(`Failed: ${err.message}`);
+      const errorMsg = getErrorMessage(err.message);
+      setMessage(errorMsg);
+      showError(errorMsg);
     }
   };
 

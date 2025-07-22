@@ -2,7 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
-
+require('dotenv').config();
+const fetch=require('node-fetch')
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 // Store active scrcpy processes for each device
@@ -57,6 +58,35 @@ function createWindow() {
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
 }
+
+ipcMain.handle('chatbot:ask',async(event,userMessage)=>{
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        Authorization:`Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model:'meta-llama/llama-4-scout-17b-16e-instruct',
+        message:[{
+          role:'system',
+          content:'You are an ADB expert assistant helping users troubleshoot and run ADB commands.'
+        },
+      {
+        role:'user',
+        content:userMessage
+      }
+      ]
+      })
+    })
+    const data=await res.json()
+    return data.choices?.[0]?.message?.content || 'No responce received';
+  } catch (error) {
+    console.error('Groq CHatbot API error',error)
+    return 'Error connecting to chatbot. Please check your internet connection or API key.'
+  }
+})
 
 ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
   return new Promise((resolve,reject)=>{

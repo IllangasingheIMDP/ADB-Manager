@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getCommands, addCommand } from '../components/commands';
 import { useNavigate } from 'react-router-dom';
+import { useNotification } from '../hooks/useNotification';
+import { getErrorMessage, getSuccessMessage } from '../utils/errorHandler';
 
 function Commands() {
   const navigate = useNavigate();
@@ -9,6 +11,8 @@ function Commands() {
   const [commands, setCommands] = useState([]);
   const [newCommand, setNewCommand] = useState({ name: '', command: '', description: '' });
   const [output, setOutput] = useState('');
+
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     setCommands(getCommands());
@@ -20,6 +24,9 @@ function Commands() {
     if (added) {
       setCommands(getCommands());
       setNewCommand({ name: '', command: '', description: '' });
+      showSuccess(getSuccessMessage('command', 'Command added successfully'));
+    } else {
+      showError('Failed to add command - command name might already exist');
     }
   };
 
@@ -27,8 +34,11 @@ function Commands() {
     try {
       const result = await window.electronAPI.adbShell(deviceId, command);
       setOutput(result);
+      showSuccess(getSuccessMessage('command', 'Command executed successfully'));
     } catch (err) {
-      setOutput(`Error: ${err.message}`);
+      const errorMsg = getErrorMessage(err.message);
+      setOutput(`Error: ${errorMsg}`);
+      showError(errorMsg);
     }
   };
 
