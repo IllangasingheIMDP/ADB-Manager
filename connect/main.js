@@ -14,11 +14,6 @@ if (isDev) {
   require('dotenv').config({ path: envPath });
 }
 
-// Debug environment loading
-console.log('Environment loading:');
-console.log('- isDev:', isDev);
-console.log('- __dirname:', __dirname);
-console.log('- GROQ_API_KEY exists:', !!process.env.GROQ_API_KEY);
 
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
