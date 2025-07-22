@@ -80,6 +80,10 @@ This full-stack desktop application demonstrates modern development practices an
 
 ![Main UI](image.png)
 
+## ▶️ Demo
+
+https://drive.google.com/file/d/1HXOIdp18AiDtgUeQJrNmLJw5rW7ZLkEC/view?usp=sharing
+
 ## 🎨 Design Features
 
 - **Glassmorphism UI**: Modern design with backdrop blur effects and transparency
