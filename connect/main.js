@@ -58,7 +58,7 @@ function createWindow() {
       nodeIntegration: false,
       webSecurity: true,
     },
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000000',
     show: false, // Don't show until ready
   });
 
