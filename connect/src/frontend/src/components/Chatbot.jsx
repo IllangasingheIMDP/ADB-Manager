@@ -354,8 +354,7 @@ const Chatbot = () => {
             {/* Custom Icon Placeholder - Replace this div with your custom icon */}
             <img src="/chatbot.png" alt="AI Icon" className="w-16 h-16 rounded-lg" />
             {/* Notification dot for new features */}
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white animate-pulse"></div>
-          </div>
+             </div>
         )}
       </button>
     </div>
