@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileSend from '../components/FileSend';
+import { useNotification } from '../hooks/useNotification';
+import { getErrorMessage, getSuccessMessage } from '../utils/errorHandler';
 
 const Device = () => {
   const { deviceId } = useParams();
@@ -12,11 +14,9 @@ const Device = () => {
   const [message, setMessage] = useState('');
   const [showFileSend, setShowFileSend] = useState(false);
 
-  useEffect(() => {
-    fetchDeviceInfo();
-  }, [deviceId]);
+  const { showSuccess, showError } = useNotification();
 
-  const fetchDeviceInfo = async () => {
+  const fetchDeviceInfo = useCallback(async () => {
     try {
       setLoading(true);
       // Get device information
@@ -29,33 +29,47 @@ const Device = () => {
       });
     } catch (err) {
       console.error('Error fetching device info:', err);
-      setMessage('Failed to get device information');
+      const errorMsg = getErrorMessage(err.message);
+      setMessage(errorMsg);
+      showError(errorMsg);
     } finally {
       setLoading(false);
     }
-  };
+  }, [deviceId, showError]);
+
+  useEffect(() => {
+    fetchDeviceInfo();
+  }, [fetchDeviceInfo]);
 
   const handleAudioToggle = async () => {
     try {
       if (audioStreaming) {
         await window.electronAPI.stopAudioStream(deviceId);
         setAudioStreaming(false);
-        setMessage('Audio stream stopped');
+        const successMsg = getSuccessMessage('audio_stop');
+        setMessage(successMsg);
+        showSuccess(successMsg);
       } else {
         await window.electronAPI.startAudioStream(deviceId);
         setAudioStreaming(true);
-        setMessage('Audio stream started');
+        const successMsg = getSuccessMessage('audio_start');
+        setMessage(successMsg);
+        showSuccess(successMsg);
       }
     } catch (err) {
-      setMessage('Failed to toggle audio stream: ' + err);
+      const errorMsg = getErrorMessage(err.message);
+      setMessage(errorMsg);
+      showError(errorMsg);
     }
   };
 
    const handleVideoOn = async()=>{
     try {
         await window.electronAPI.startVideoStream(deviceId);
+        showSuccess('Screen mirroring started successfully');
     } catch (error) {
         console.log('Failed to start video stream: ' + error.message);
+        showError(getErrorMessage(error.message));
     }
    }
 
@@ -63,10 +77,14 @@ const Device = () => {
     try {
       setMessage('Reconnecting...');
       await window.electronAPI.adbReconnect(deviceId);
-      setMessage('Device reconnected successfully');
+      const successMsg = getSuccessMessage('reconnect');
+      setMessage(successMsg);
+      showSuccess(successMsg);
       fetchDeviceInfo();
     } catch (err) {
-      setMessage('Failed to reconnect: ' + err);
+      const errorMsg = getErrorMessage(err.message);
+      setMessage(errorMsg);
+      showError(errorMsg);
     }
   };
 
@@ -114,7 +132,7 @@ const Device = () => {
       title: 'Device Info',
       description: 'View detailed device information',
       icon: 'ℹ️',
-      action: () => setMessage('Detailed info - Coming soon!'),
+      action: () => showSuccess('Detailed info feature - Coming soon!'),
       color: 'from-gray-500 to-slate-500'
     }
   ];

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useNotification } from '../hooks/useNotification';
+import { getErrorMessage, getSuccessMessage } from '../utils/errorHandler';
 
 function FileExplorer() {
   const { deviceId } = useParams();
@@ -8,6 +10,8 @@ function FileExplorer() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     
@@ -29,6 +33,7 @@ const fetchEntries = async (path) => {
     } catch (err) {
       if (err.message.includes('device offline')) {
         setMessage('Device offline, attempting to reconnect...');
+        showError('Device offline, attempting to reconnect...');
         await window.electronAPI.adbConnect(deviceId.split(':')[0], deviceId.split(':')[1] || '5555');
         result = await window.electronAPI.adbShell(deviceId, `ls -p "${escapedPath}"`);
         console.log('Raw ls -p output after reconnect:', result);
@@ -51,7 +56,9 @@ const fetchEntries = async (path) => {
     console.log('Parsed entries:', files);
     setEntries(files);
   } catch (err) {
-    setMessage(`Failed to load directory: ${err.message}`);
+    const errorMsg = getErrorMessage(err.message);
+    setMessage(`Failed to load directory: ${errorMsg}`);
+    showError(errorMsg);
     console.error('ADB Error:', err);
   }
   setLoading(false);
@@ -75,10 +82,14 @@ const fetchEntries = async (path) => {
     setMessage('Downloading...');
     try {
       // You may want to prompt for a save location
-      const result = await window.electronAPI.adbPull(deviceId, `"${currentPath}/${entry.name}"` ,);
-      setMessage('Downloaded: ' + entry.name);
+      await window.electronAPI.adbPull(deviceId, `"${currentPath}/${entry.name}"` ,);
+      const successMsg = getSuccessMessage('download', entry.name);
+      setMessage(successMsg);
+      showSuccess(successMsg);
     } catch (err) {
-      setMessage('Failed to download file');
+      const errorMsg = getErrorMessage(err.message);
+      setMessage(errorMsg);
+      showError(errorMsg);
     }
   };
 

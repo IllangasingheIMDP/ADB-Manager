@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FileSend from './FileSend';
+import { useNotification } from '../hooks/useNotification';
+import { getErrorMessage, getSuccessMessage } from '../utils/errorHandler';
 
 function DeviceList() {
   const [devices, setDevices] = useState([]);
-  const [error, setError] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [fileSendDevice, setFileSendDevice] = useState(null);
   const [audioStreaming, setAudioStreaming] = useState({}); // Track audio streaming state per device
 
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
 
-  const fetchDevices = async () => {
+  const fetchDevices = useCallback(async () => {
     try {
       const result = await window.electronAPI.adbDevices();
       const devicesList = result
@@ -20,18 +22,17 @@ function DeviceList() {
         .filter(line => line.trim() !== '')
         .map(line => line.split('\t')[0]);
       setDevices(devicesList);
-      setError('');
     } catch (err) {
       console.error('Error fetching devices:', err);
-      setError('Failed to fetch devices');
+      showError(getErrorMessage(err.message));
     }
-  };
+  }, [showError]);
 
   useEffect(() => {
     fetchDevices();
     const interval = setInterval(fetchDevices, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchDevices]);
 
   const handleDeviceClick = (deviceId) => {
     navigate(`/device/${deviceId}`);
@@ -44,12 +45,14 @@ function DeviceList() {
 
   const handleReconnectClick = async (deviceId) => {
     try{
+      
       await window.electronAPI.adbReconnect(deviceId);
       setActiveMenu(null);
       fetchDevices();
+      showSuccess(getSuccessMessage('reconnect'));
     }catch (err) {
       console.error('Error reconnecting device:', err);
-      setError('Failed to reconnect device');
+      showError(getErrorMessage(err.message));
     }
   }
 
@@ -65,19 +68,22 @@ function DeviceList() {
     const isCurrentlyStreaming = audioStreaming[deviceId];
     
     try {
+      
       if (isCurrentlyStreaming) {
         // Stop audio streaming
         await window.electronAPI.stopAudioStream(deviceId);
         setAudioStreaming(prev => ({ ...prev, [deviceId]: false }));
+        showSuccess(getSuccessMessage('audio_stop'));
       } else {
         // Start audio streaming
         await window.electronAPI.startAudioStream(deviceId);
         setAudioStreaming(prev => ({ ...prev, [deviceId]: true }));
+        showSuccess(getSuccessMessage('audio_start'));
       }
       setActiveMenu(null);
     } catch (err) {
       console.error('Error toggling audio stream:', err);
-      setError('Failed to toggle audio stream');
+      showError(getErrorMessage(err.message));
     }
   };
 
@@ -88,7 +94,6 @@ function DeviceList() {
       >
         Connected Devices
       </h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
       <div>
         {devices.length === 0 && (
           <div className="text-[#04806b] mb-4">No devices connected</div>
