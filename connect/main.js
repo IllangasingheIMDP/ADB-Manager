@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
@@ -394,6 +394,22 @@ ipcMain.handle('tcpip', async (event, id, port) => {
       }
     });
   });
+});
+
+// Handle file dialog
+ipcMain.handle('show-open-dialog', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [
+      { name: 'All Files', extensions: ['*'] },
+      { name: 'Images', extensions: ['jpg', 'png', 'gif', 'jpeg', 'bmp', 'webp'] },
+      { name: 'Videos', extensions: ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv'] },
+      { name: 'Audio', extensions: ['mp3', 'wav', 'flac', 'aac', 'ogg'] },
+      { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'txt', 'rtf'] },
+      { name: 'Archives', extensions: ['zip', 'rar', '7z', 'tar', 'gz'] }
+    ]
+  });
+  return result;
 });
 
 // Clean up active streams on app quit

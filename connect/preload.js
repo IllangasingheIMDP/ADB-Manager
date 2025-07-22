@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startVideoStream: (deviceId) => ipcRenderer.invoke('start-vidoe-stream', deviceId),
   stopAudioStream: (deviceId) => ipcRenderer.invoke('stop-audio-stream', deviceId),
   checkScrcpy: () => ipcRenderer.invoke('check-scrcpy'),
-  chatbotAsk:(userMessage)=>ipcRenderer.invoke('chatbot:ask',userMessage)
+  chatbotAsk:(userMessage)=>ipcRenderer.invoke('chatbot:ask',userMessage),
+  showOpenDialog: () => ipcRenderer.invoke('show-open-dialog')
 
 });
