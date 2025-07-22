@@ -3,7 +3,6 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
 require('dotenv').config();
-const fetch = require('node-fetch');
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 // Store active scrcpy processes for each device
@@ -69,6 +68,7 @@ function createWindow() {
 
 ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   try {
+    // Use global fetch (available in Node.js 18+ and Electron)
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -79,7 +79,42 @@ ipcMain.handle('chatbot:ask', async (event, userMessage) => {
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [{
           role: 'system',
-          content: 'You are an ADB expert assistant helping users troubleshoot and run ADB commands.'
+          content: `You are an expert ADB (Android Debug Bridge) assistant integrated into a comprehensive ADB Manager desktop application. Your role is to help users with:
+
+**Core ADB Operations:**
+- Device connection and management (USB/WiFi)
+- File transfer operations (push/pull) to/from Android devices
+- Shell command execution and troubleshooting
+- Device debugging and development workflows
+- Network ADB setup and wireless connections
+
+**Application-Specific Features:**
+- This application includes scrcpy integration for screen mirroring and control
+- Audio and video streaming capabilities between devices
+- File explorer functionality for Android device file systems
+- Device reconnection and connection management
+- TCP/IP mode switching for wireless debugging
+
+**Your Expertise Covers:**
+- ADB command syntax and best practices
+- Common connection issues and their solutions
+- Android file system navigation and permissions
+- Developer options and USB debugging setup
+- Network configuration for wireless ADB
+- Troubleshooting device detection problems
+- Performance optimization for file transfers
+- Security considerations when using ADB
+
+**Response Guidelines:**
+- Provide clear, step-by-step instructions
+- Include relevant ADB commands with proper syntax
+- Explain potential issues and how to resolve them
+- Consider both USB and wireless connection scenarios
+- Reference the application's built-in features when relevant
+- Prioritize safety and security in your recommendations
+- Offer alternative solutions when primary methods fail
+
+Always be concise but thorough, and tailor your responses to both beginners and advanced users based on their questions.`
         },
         {
           role: 'user',
@@ -87,7 +122,9 @@ ipcMain.handle('chatbot:ask', async (event, userMessage) => {
         }]
       })
     });
+    
     const data = await res.json();
+    
     return data.choices?.[0]?.message?.content || 'No response received';
   } catch (error) {
     console.error('Groq Chatbot API error', error);
@@ -95,7 +132,7 @@ ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   }
 });
 
-ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
+ipcMain.handle('start-vidoe-stream',async(event,deviceId)=>{
   return new Promise((resolve,reject)=>{
    try {
        if (activeVideoStreams.has(deviceId)){
