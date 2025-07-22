@@ -335,10 +335,11 @@ const Chatbot = () => {
       };
 
       setMessages(prev => [...prev, botMessage]);
-    } catch {
+    } catch (error) {
+      console.error('Chatbot error:', error);
       const errorMessage = {
         id: Date.now() + 1,
-        text: "Sorry, I'm having trouble connecting right now. Please try again.",
+        text: `Sorry, I encountered an error: ${error.message || "Please try again."}`,
         sender: 'bot',
         timestamp: new Date()
       };

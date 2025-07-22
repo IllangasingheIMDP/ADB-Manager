@@ -35,6 +35,7 @@
     "files": [
       "main.js",
       "preload.js",
+      ".env",
       "src/frontend/dist/**/*",
       "src/backend/**/*",
       "node_modules/**/*"

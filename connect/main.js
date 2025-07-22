@@ -2,7 +2,24 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
-require('dotenv').config();
+
+// Load environment variables
+const isDev = !app.isPackaged;
+if (isDev) {
+  // In development, load from .env file
+  require('dotenv').config();
+} else {
+  // In production, try to load .env from the app directory
+  const envPath = path.join(__dirname, '.env');
+  require('dotenv').config({ path: envPath });
+}
+
+// Debug environment loading
+console.log('Environment loading:');
+console.log('- isDev:', isDev);
+console.log('- __dirname:', __dirname);
+console.log('- GROQ_API_KEY exists:', !!process.env.GROQ_API_KEY);
+
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 // Store active scrcpy processes for each device
@@ -69,6 +86,14 @@ function createWindow() {
 
 ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   try {
+    // Debug: Check if API key is loaded
+    console.log('GROQ_API_KEY exists:', !!process.env.GROQ_API_KEY);
+    console.log('GROQ_API_KEY length:', process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.length : 'undefined');
+    
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY not found in environment variables');
+    }
+    
     // Use global fetch (available in Node.js 18+ and Electron)
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -126,10 +151,26 @@ Always be concise but thorough, and tailor your responses to both beginners and 
     
     const data = await res.json();
     
+    if (!res.ok) {
+      throw new Error(`API Error: ${res.status} - ${data.error?.message || 'Unknown error'}`);
+    }
+    
     return data.choices?.[0]?.message?.content || 'No response received';
   } catch (error) {
-    console.error('Groq Chatbot API error', error);
-    return 'Error connecting to chatbot. Please check your internet connection or API key.';
+    console.error('Groq Chatbot API error:', error);
+    
+    // Return different error messages based on the error type
+    if (error.message.includes('GROQ_API_KEY not found')) {
+      return 'Error: API key not configured. Please check your environment variables.';
+    } else if (error.message.includes('API Error: 401')) {
+      return 'Error: Invalid API key. Please check your GROQ API key.';
+    } else if (error.message.includes('API Error: 429')) {
+      return 'Error: Rate limit exceeded. Please try again later.';
+    } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return 'Error: Network connection failed. Please check your internet connection.';
+    } else {
+      return `Error: ${error.message}. Please check your internet connection or API key.`;
+    }
   }
 });
 
