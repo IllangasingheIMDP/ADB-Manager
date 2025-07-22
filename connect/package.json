@@ -1,5 +1,5 @@
 {
-  "name": "connect",
+  "name": "adb-manager",
   "version": "1.0.0",
   "description": "Devices Connect",
   "main": "main.js",
@@ -10,7 +10,7 @@
     "build:react": "cd src/frontend && npm run build",
     "electron": "electron ."
   },
-  "author": "Dasun I",
+  "author": "Dasun Illangasinghe",
   "license": "ISC",
   "devDependencies": {
     "electron": "^37.2.3",
@@ -27,8 +27,8 @@
     "wait-on": "^8.0.3"
   },
   "build": {
-    "appId": "com.adbconnect.connect",
-    "productName": "ADB Connect",
+    "appId": "com.adbmanager.connect",
+    "productName": "ADB Manager",
     "directories": {
       "output": "dist"
     },
