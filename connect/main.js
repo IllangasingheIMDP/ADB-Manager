@@ -1,14 +1,13 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
 require('dotenv').config();
-const fetch=require('node-fetch')
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 // Store active scrcpy processes for each device
 const activeAudioStreams = new Map();
-const activeVideoStreams=new Map();
+const activeVideoStreams = new Map();
 
 // Get the correct scrcpy path based on platform and whether app is packaged
 function getScrcpyPath() {
@@ -39,56 +38,102 @@ function createWindow() {
     width: 1024,
     height: 768,
     resizable: true,
+    icon: path.join(__dirname, 'src/frontend/public/logo.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       enableRemoteModule: false,
       nodeIntegration: false,
-      experimentalFeatures: true,
+      webSecurity: true,
     },
-    backgroundColor: '#00000000',
-    transparent: true,
+    backgroundColor: '#ffffff',
+    show: false, // Don't show until ready
   });
 
   const isDev = !app.isPackaged;
+
+  // Show window when ready to prevent flash
+  win.once('ready-to-show', () => {
+    win.show();
+  });
 
   win.loadURL(
     isDev
       ? 'http://localhost:3000'
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
+
+  // Optional: Open DevTools in development
+  
 }
 
-ipcMain.handle('chatbot:ask',async(event,userMessage)=>{
+ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        Authorization:`Bearer ${process.env.GROQ_API_KEY}`
+    // Use global fetch (available in Node.js 18+ and Electron)
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model:'meta-llama/llama-4-scout-17b-16e-instruct',
-        message:[{
-          role:'system',
-          content:'You are an ADB expert assistant helping users troubleshoot and run ADB commands.'
-        },
-      {
-        role:'user',
-        content:userMessage
-      }
-      ]
-      })
-    })
-    const data=await res.json()
-    return data.choices?.[0]?.message?.content || 'No responce received';
-  } catch (error) {
-    console.error('Groq CHatbot API error',error)
-    return 'Error connecting to chatbot. Please check your internet connection or API key.'
-  }
-})
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        messages: [{
+          role: 'system',
+          content: `You are an expert ADB (Android Debug Bridge) assistant integrated into a comprehensive ADB Manager desktop application. Your role is to help users with:
 
-ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
+**Core ADB Operations:**
+- Device connection and management (USB/WiFi)
+- File transfer operations (push/pull) to/from Android devices
+- Shell command execution and troubleshooting
+- Device debugging and development workflows
+- Network ADB setup and wireless connections
+
+**Application-Specific Features:**
+- This application includes scrcpy integration for screen mirroring and control
+- Audio and video streaming capabilities between devices
+- File explorer functionality for Android device file systems
+- Device reconnection and connection management
+- TCP/IP mode switching for wireless debugging
+
+**Your Expertise Covers:**
+- ADB command syntax and best practices
+- Common connection issues and their solutions
+- Android file system navigation and permissions
+- Developer options and USB debugging setup
+- Network configuration for wireless ADB
+- Troubleshooting device detection problems
+- Performance optimization for file transfers
+- Security considerations when using ADB
+
+**Response Guidelines:**
+- Provide clear, step-by-step instructions
+- Include relevant ADB commands with proper syntax
+- Explain potential issues and how to resolve them
+- Consider both USB and wireless connection scenarios
+- Reference the application's built-in features when relevant
+- Prioritize safety and security in your recommendations
+- Offer alternative solutions when primary methods fail
+
+Always be concise but thorough, and tailor your responses to both beginners and advanced users based on their questions.`
+        },
+        {
+          role: 'user',
+          content: userMessage
+        }]
+      })
+    });
+    
+    const data = await res.json();
+    
+    return data.choices?.[0]?.message?.content || 'No response received';
+  } catch (error) {
+    console.error('Groq Chatbot API error', error);
+    return 'Error connecting to chatbot. Please check your internet connection or API key.';
+  }
+});
+
+ipcMain.handle('start-vidoe-stream',async(event,deviceId)=>{
   return new Promise((resolve,reject)=>{
    try {
        if (activeVideoStreams.has(deviceId)){
@@ -120,10 +165,10 @@ ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
       });
        // Give it a moment to start
       setTimeout(() => {
-        if (activeAudioStreams.has(deviceId)) {
-          resolve('Audio stream started successfully');
+        if (activeVideoStreams.has(deviceId)) {
+          resolve('Video stream started successfully');
         } else {
-          reject('Failed to start audio stream');
+          reject('Failed to start video stream');
         }
       }, 2000);
 
@@ -350,6 +395,22 @@ ipcMain.handle('tcpip', async (event, id, port) => {
       }
     });
   });
+});
+
+// Handle file dialog
+ipcMain.handle('show-open-dialog', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [
+      { name: 'All Files', extensions: ['*'] },
+      { name: 'Images', extensions: ['jpg', 'png', 'gif', 'jpeg', 'bmp', 'webp'] },
+      { name: 'Videos', extensions: ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv'] },
+      { name: 'Audio', extensions: ['mp3', 'wav', 'flac', 'aac', 'ogg'] },
+      { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'txt', 'rtf'] },
+      { name: 'Archives', extensions: ['zip', 'rar', '7z', 'tar', 'gz'] }
+    ]
+  });
+  return result;
 });
 
 // Clean up active streams on app quit

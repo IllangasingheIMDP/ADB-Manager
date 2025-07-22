@@ -1,46 +1,56 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
+import { useNotification } from "../hooks/useNotification";
 
 function FileSend({ deviceId, onClose }) {
-  const fileInputRef = useRef();
-  const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
-  const [fileName, setFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const { showSuccess, showError, showInfo } = useNotification();
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFileName(file ? file.name : '');
+  const handleFileSelect = async () => {
+    try {
+      const result = await window.electronAPI.showOpenDialog();
+      if (!result.canceled && result.filePaths.length > 0) {
+        const filePath = result.filePaths[0];
+        const fileName = filePath.split(/[\\/]/).pop(); // Get filename from path
+        setSelectedFile({ path: filePath, name: fileName });
+      }
+    } catch (error) {
+      showError(`Failed to open file dialog: ${error.message}`);
+    }
   };
 
   const handleSend = async () => {
-    const file = fileInputRef.current.files[0];
-    if (!file) {
-      setMessage('Please select a file to send.');
+    if (!selectedFile) {
+      showError('Please select a file to send.');
       return;
     }
     setSending(true);
-    setMessage('Sending file...');
+    showInfo('Sending file...');
     try {
-      const result = await window.electronAPI.adbPush(deviceId, file.path);
-      setMessage(`File sent successfully: ${result}`);
+      console.log(`Sending file: ${selectedFile.path} to device: ${deviceId}`);
+      const result = await window.electronAPI.adbPush(deviceId, selectedFile.path);
+      showSuccess(`File sent successfully: ${result}`);
+      onClose(); // Close the dialog after successful send
     } catch (error) {
-      setMessage(`Failed to send file: ${error.message}`);
+      showError(`Failed to send file: ${error.message}`);
     }
     setSending(false);
-    fileInputRef.current.value = ''; // Clear the file input
-    setFileName(''); // Clear the file name
+    setSelectedFile(null); // Clear the selected file
   };
 
   return (
     <div className="p-6 bg-white/80 rounded-2xl shadow-lg border border-[#04806b]/30 min-w-[320px] relative">
       <h3 className="text-xl font-bold mb-4 text-[#04806b] text-center">Send File to Device</h3>
       <div className="flex flex-col items-center gap-3">
-        <label className="w-full flex flex-col items-center px-4 py-6 bg-emerald-50 text-[#04806b] rounded-lg shadow border-2 border-dashed border-[#04806b] cursor-pointer hover:bg-emerald-100 transition">
+        <button 
+          onClick={handleFileSelect}
+          className="w-full flex flex-col items-center px-4 py-6 bg-emerald-50 text-[#04806b] rounded-lg shadow border-2 border-dashed border-[#04806b] cursor-pointer hover:bg-emerald-100 transition"
+        >
           <span className="mb-2 text-base font-semibold">Choose a file</span>
-          <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
-          {fileName && (
-            <span className="mt-2 text-sm text-emerald-900 font-medium truncate w-full text-center">{fileName}</span>
+          {selectedFile && (
+            <span className="mt-2 text-sm text-emerald-900 font-medium truncate w-full text-center">{selectedFile.name}</span>
           )}
-        </label>
+        </button>
         <div className="flex gap-3 w-full mt-2">
           <button
             onClick={handleSend}
@@ -59,12 +69,6 @@ function FileSend({ deviceId, onClose }) {
             Cancel
           </button>
         </div>
-        {message && (
-          <div className={`mt-3 text-center text-sm rounded p-2 w-full
-            ${message.startsWith('Failed') ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-[#04806b]'}`}>
-            {message}
-          </div>
-        )}
       </div>
     </div>
   );

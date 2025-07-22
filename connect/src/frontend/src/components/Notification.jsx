@@ -5,7 +5,6 @@ const Notification = ({
   type = 'info', 
   duration = 4000, 
   onClose,
-  position = 'top-right',
   showIcon = true 
 }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -97,31 +96,12 @@ const Notification = ({
     }
   };
 
-  const getPositionStyles = () => {
-    switch (position) {
-      case 'top-left':
-        return 'top-4 left-4';
-      case 'top-center':
-        return 'top-4 left-1/2 transform -translate-x-1/2';
-      case 'top-right':
-        return 'top-4 right-4';
-      case 'bottom-left':
-        return 'bottom-4 left-4';
-      case 'bottom-center':
-        return 'bottom-4 left-1/2 transform -translate-x-1/2';
-      case 'bottom-right':
-        return 'bottom-4 right-4';
-      default:
-        return 'top-4 right-4';
-    }
-  };
-
   if (!isVisible) return null;
 
   const styles = getTypeStyles();
 
   return (
-    <div className={`fixed z-50 ${getPositionStyles()}`}>
+    <div className="relative z-100">
       <div
         className={`
           min-w-80 max-w-md rounded-2xl border ${styles.borderColor} ${styles.shadowColor} shadow-lg 

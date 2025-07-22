@@ -61,15 +61,14 @@ export const NotificationProvider = ({ children }) => {
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      <div className="notification-container">
+      <div className="notification-container z-100 font-custom2 fixed top-0 right-0 p-4 space-y-2 pointer-events-none">
         {notifications.map((notification, index) => (
           <div
             key={notification.id}
             style={{
               zIndex: 1000 + index,
-              top: `${20 + index * 100}px`,
             }}
-            className="fixed right-4"
+            className="pointer-events-auto transform transition-all duration-300 ease-in-out"
           >
             <Notification
               {...notification}

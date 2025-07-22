@@ -89,7 +89,7 @@ function DeviceList() {
 
   return (
     <div className="w-full p-6">
-      <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] via-white text-transparent bg-clip-text"
+      <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-[#029078] to-emerald-400 text-transparent bg-clip-text"
       style={{ backgroundClip: 'text', WebkitBackgroundClip: 'text' }}
       >
         Connected Devices
@@ -102,66 +102,74 @@ function DeviceList() {
           {devices.map((device, index) => (
             <li
               key={index}
-              className="flex items-center justify-between bg-white/70 border rounded p-2 hover:bg-emerald-100 transition-transform duration-200 transform cursor-pointer"
+              className="relative flex items-center justify-between border border-emerald-400/40 rounded-2xl p-4 hover:scale-[1.02] transition-all duration-300 transform cursor-pointer shadow-lg shadow-emerald-800/20 overflow-hidden"
               onClick={() => handleDeviceClick(device)}
             >
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-gray-800">{device}</span>
+              {/* Glassmorphism background */}
+              <div 
+                className="absolute inset-0 bg-emerald-900/10 rounded-2xl"
+                style={{ backdropFilter: 'blur(12px)' }}
+              ></div>
+              
+              {/* Content */}
+              <div className="relative z-10 flex items-center gap-2">
+                <span className="font-mono text-emerald-100 font-medium">{device}</span>
                 {audioStreaming[device] && (
-                  <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full">🎵 Audio On</span>
+                  <span className="text-xs bg-emerald-500/80 text-white px-3 py-1 rounded-full backdrop-blur-sm border border-emerald-400/30">🎵 Audio On</span>
                 )}
               </div>
-              <div className="relative">
-                <button
-                  onClick={(e) => handleMenuClick(device, e)}
-                  className="p-1 hover:bg-emerald-100 rounded transition"
-                  title="Show actions"
-                >
-                  <span className="dots text-xl">⋮</span>
-                </button>
+              <div className="relative z-10">
+                
                 {activeMenu === device && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border border-[#04806b]/70 bg-white/90 backdrop-blur-md ring-1 ring-black ring-opacity-10 z-50 max-h-72 overflow-y-auto transition-all duration-200">
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border border-emerald-400/40 ring-1 ring-emerald-400/20 z-50 max-h-72 overflow-hidden transition-all duration-300">
+                    {/* Glassmorphism background */}
+                    <div 
+                      className="absolute inset-0 bg-emerald-900/20 rounded-2xl"
+                      style={{ backdropFilter: 'blur(12px)' }}
+                    ></div>
+                    
                     {/* Caret */}
-                    <div className="absolute -top-2 right-6 w-4 h-4 bg-white/70 border-t border-l border-[#04806b]/30 rotate-45 z-10"></div>
-                    <div className="py-2">
+                    <div className="absolute -top-2 right-6 w-4 h-4 bg-emerald-900/20 border-t border-l border-emerald-400/30 rotate-45 z-10" style={{ backdropFilter: 'blur(12px)' }}></div>
+                    
+                    <div className="relative z-10 py-2">
                       <button
                         onClick={() => handleCommandsClick(device)}
-                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                        className="block w-full px-4 py-3 text-sm text-emerald-100 font-medium hover:bg-emerald-400/20 hover:text-white rounded-xl transition-all duration-200 mx-2"
                       >
                         Execute Shell Commands
                       </button>
-                      <div className="border-t border-emerald-100 my-1" />
+                      <div className="border-t border-emerald-400/20 my-1 mx-2" />
                       <button
                         onClick={() => {
                           setFileSendDevice(device);
                           setActiveMenu(null);
                         }}
-                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                        className="block w-full px-4 py-3 text-sm text-emerald-100 font-medium hover:bg-emerald-400/20 hover:text-white rounded-xl transition-all duration-200 mx-2"
                       >
                         Send files
                       </button>
-                      <div className="border-t border-emerald-100 my-1" />
+                      <div className="border-t border-emerald-400/20 my-1 mx-2" />
                       <button
                         onClick={() => handleAudioToggle(device)}
-                        className={`block w-full px-4 py-2 text-sm font-medium rounded-md transition ${
+                        className={`block w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 mx-2 ${
                           audioStreaming[device] 
-                            ? 'text-red-700 hover:bg-red-100' 
-                            : 'text-gray-800 hover:bg-emerald-200/70 hover:text-[#04806b]'
+                            ? 'text-red-300 hover:bg-red-500/20 hover:text-red-100' 
+                            : 'text-emerald-100 hover:bg-emerald-400/20 hover:text-white'
                         }`}
                       >
                         {audioStreaming[device] ? ' Stop Audio Stream' : 'Start Audio Stream'}
                       </button>
-                      <div className="border-t border-emerald-100 my-1" />
+                      <div className="border-t border-emerald-400/20 my-1 mx-2" />
                       <button
                         onClick={() => handleReconnectClick(device)}
-                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                        className="block w-full px-4 py-3 text-sm text-emerald-100 font-medium hover:bg-emerald-400/20 hover:text-white rounded-xl transition-all duration-200 mx-2"
                       >
                         Reconnect
                       </button>
-                      <div className="border-t border-emerald-100 my-1" />
+                      <div className="border-t border-emerald-400/20 my-1 mx-2" />
                       <button
                         onClick={() => handleExplorerClick(device)}
-                        className="block w-full px-4 py-2 text-sm text-gray-800 font-medium hover:bg-emerald-200/70 hover:text-[#04806b] rounded-md transition"
+                        className="block w-full px-4 py-3 text-sm text-emerald-100 font-medium hover:bg-emerald-400/20 hover:text-white rounded-xl transition-all duration-200 mx-2"
                       >
                         File Explorer
                       </button>
@@ -175,26 +183,40 @@ function DeviceList() {
       </div>
       <button
         onClick={fetchDevices}
-        className="mt-6 w-full p-2 bg-emerald-700/70 text-white rounded hover:bg-teal-700 hover:scale-105 transition-transform duration-200"
+        className="mt-6 w-full p-4 rounded-2xl border border-emerald-400/40 text-emerald-100 font-medium hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-emerald-800/20 relative overflow-hidden"
       >
-        Refresh Devices
+        {/* Glassmorphism background */}
+        <div 
+          className="absolute inset-0 bg-emerald-700/20 rounded-2xl"
+          style={{ backdropFilter: 'blur(12px)' }}
+        ></div>
+        <span className="relative z-10">Refresh Devices</span>
       </button>
       {fileSendDevice && (
-        <div className="absolute inset-0.5 flex items-center justify-center  ">
-          <div className="relative rounded-2xl border border-[#04806b]/30 shadow-emerald-800 shadow-lg bg-white/80 backdrop-blur-lg p-0">
+        <div className="absolute inset-0.5 flex items-center justify-center">
+          <div className="relative rounded-2xl border border-emerald-400/40 shadow-emerald-800 shadow-lg overflow-hidden">
+            {/* Glassmorphism background */}
+            <div 
+              className="absolute inset-0 bg-emerald-900/20 rounded-2xl"
+              style={{ backdropFilter: 'blur(12px)' }}
+            ></div>
+            
             <button
               onClick={() => setFileSendDevice(null)}
-              className="absolute top-2 right-2 text-[#04806b] bg-white/80 rounded-full p-1 hover:bg-emerald-100 transition z-10"
+              className="absolute top-4 right-4 text-emerald-100 bg-emerald-400/20 rounded-full p-2 hover:bg-emerald-400/30 transition-all duration-200 z-20 backdrop-blur-sm border border-emerald-400/30"
               title="Close"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <FileSend
-              deviceId={fileSendDevice}
-              onClose={() => setFileSendDevice(null)}
-            />
+            
+            <div className="relative z-10">
+              <FileSend
+                deviceId={fileSendDevice}
+                onClose={() => setFileSendDevice(null)}
+              />
+            </div>
           </div>
         </div>
       )}

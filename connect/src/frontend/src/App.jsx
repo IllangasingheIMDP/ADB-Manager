@@ -2,9 +2,11 @@ import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import DeviceList from './components/DeviceList';
 import ConnectDevice from './components/ConnectDevice';
+import ChatBot from './components/ChatBot';
 import Commands from './pages/Commands';
 import FileExplorer from './pages/FileExplorer';
 import Device from './pages/Device';
+import Background from './components/Background';
 import { NotificationProvider } from './components/NotificationProvider';
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -29,15 +31,15 @@ function App() {
     <ErrorBoundary>
       <NotificationProvider>
         <HashRouter>
-          <div className="flex flex-col h-full w-full  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
-          <h1 className="text-4xl font-bold text-teal-600 mb-8 "
-
+          <Background>
+          
+          <h1 className="text-6xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-600 to-emerald-400 bg-clip-text text-transparent mt-10 mb-8 tracking-wider drop-shadow-lg font-custom"
           >ADB Manager</h1>
           <Routes>
             <Route path="/" element={
               <>
                 <div
-                  className="w-full hover:scale-105 transition-transform duration-200 max-w-md rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-visible"
+                  className="w-full  font-custom2 hover:scale-105 transition-transform duration-200 max-w-md rounded-2xl border border-white/20 shadow-emerald-800 shadow-md relative overflow-visible"
                 >
                   <div
                     className="absolute rounded-2xl inset-0 bg-emerald-800/10"
@@ -48,7 +50,7 @@ function App() {
                   </div>
                 </div>
                 <div
-                  className="w-full hover:scale-105 transition-transform duration-200 max-w-md rounded-2xl border border-white/20 shadow-emerald-800 shadow-md mt-16 relative overflow-vertical"
+                  className="w-full font-custom2 hover:scale-105 transition-transform duration-200 max-w-md rounded-2xl border border-white/20 shadow-emerald-800 shadow-md mt-16 relative overflow-vertical"
                 >
                   <div
                     className="absolute rounded-2xl inset-0 bg-emerald-800/10"
@@ -65,7 +67,10 @@ function App() {
             <Route path="/explorer/:deviceId" element={<FileExplorer />} />
 
           </Routes>
-        </div>
+          
+          {/* Chatbot - appears on all pages */}
+          <ChatBot />
+        </Background>
       </HashRouter>
     </NotificationProvider>
     </ErrorBoundary>
