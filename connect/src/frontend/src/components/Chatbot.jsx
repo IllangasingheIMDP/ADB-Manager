@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
+// Import the chatbot image
+import chatbotIcon from '/chatbot.png';
+
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -395,7 +398,7 @@ const Chatbot = () => {
                   {/* Custom Icon Placeholder */}
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-900 to-emerald-950 flex items-center justify-center">
                     {/* Replace this div with your custom icon */}
-                    <img src="/chatbot.png" alt="AI Icon" className="w-5 h-5 bg-white/20 rounded-sm flex items-center justify-center" />
+                    <img src={chatbotIcon} alt="AI Icon" className="w-5 h-5 bg-white/20 rounded-sm flex items-center justify-center" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white">ADB Assistant</h3>
@@ -430,7 +433,7 @@ const Chatbot = () => {
                           </div>
                         ) : (
                           <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden">
-                            <img src="/chatbot.png" alt="AI Assistant" className="w-7 h-7 rounded-full" />
+                            <img src={chatbotIcon} alt="AI Assistant" className="w-7 h-7 rounded-full" />
                           </div>
                         )}
                       </div>
@@ -487,7 +490,7 @@ const Chatbot = () => {
                     <div className="flex flex-row">
                       <div className="flex-shrink-0 mr-2">
                         <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden">
-                          <img src="/chatbot.png" alt="AI Assistant" className="w-7 h-7 rounded-full object-cover" />
+                          <img src={chatbotIcon} alt="AI Assistant" className="w-7 h-7 rounded-full object-cover" />
                         </div>
                       </div>
                       <div className="bg-white/20 text-white p-4 rounded-2xl rounded-bl-md border border-white/10 max-w-[85%]"
@@ -550,7 +553,7 @@ const Chatbot = () => {
         ) : (
           <div className="relative">
             {/* Custom Icon Placeholder - Replace this div with your custom icon */}
-            <img src="/chatbot.png" alt="AI Icon" className="w-16 h-16 rounded-lg" />
+            <img src={chatbotIcon} alt="AI Icon" className="w-16 h-16 rounded-lg" />
             {/* Notification dot for new features */}
              </div>
         )}
