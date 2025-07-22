@@ -25,7 +25,6 @@ function ConnectDevice() {
   const [method, setMethod] = useState('');
   const [ip, setIp] = useState('');
   const [port, setPort] = useState('5555');
-  const [message, setMessage] = useState('');
   const [usbDevices, setUsbDevices] = useState([]);
 
   const { showSuccess, showError } = useNotification();
@@ -62,11 +61,9 @@ function ConnectDevice() {
     e.preventDefault();
     try {
       const result = await window.electronAPI.adbConnect(ip, port);
-      setMessage(result);
       showSuccess(getSuccessMessage('connect', result));
     } catch (err) {
       const errorMsg = getErrorMessage(err.message);
-      setMessage(errorMsg);
       showError(errorMsg);
     }
   };
@@ -74,26 +71,23 @@ function ConnectDevice() {
   const delay = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   const handleUsbDeviceClick = async (deviceId) => {
-    setMessage('Switching device to TCP/IP mode...');
+    showSuccess('Switching device to TCP/IP mode...');
     try {
       await window.electronAPI.adbTcpip(deviceId, 5555);
-      setMessage('Getting device IP from WiFi interface...');
+      showSuccess('Getting device IP from WiFi interface...');
       await delay(5000);
       const ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip -f inet addr show wlan0');
       const deviceIp = extractIpFromIpAddr(ipAddrOutput);
       if (!deviceIp) {
         const errorMsg = 'Could not find a valid IP address for this device.';
-        setMessage(errorMsg);
         showError(errorMsg);
         return;
       }
-      setMessage(`Connecting to ${deviceIp}:5555 ...`);
+      showSuccess(`Connecting to ${deviceIp}:5555 ...`);
       const connectResult = await window.electronAPI.adbConnect(deviceIp, '5555');
-      setMessage(connectResult);
       showSuccess(getSuccessMessage('tcpip', connectResult));
     } catch (err) {
       const errorMsg = getErrorMessage(err.message);
-      setMessage(errorMsg);
       showError(errorMsg);
     }
   };
@@ -210,8 +204,6 @@ function ConnectDevice() {
           </button>
         </div>
       )}
-
-      {message && <p className="mt-4 text-lg text-emerald-300">{message}</p>}
     </div>
   );
 }
