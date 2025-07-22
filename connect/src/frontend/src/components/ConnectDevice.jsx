@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 
 function extractIpFromIpAddr(output) {
+  // Handle new format: "inet 10.10.28.76/19 brd ..."
+  const match = output.match(/inet\s+(\d+\.\d+\.\d+\.\d+)\/\d+/);
+  if (match) {
+    const ip = match[1];
+    // Filter out localhost and only accept private network ranges
+    if (!ip.startsWith('127.') && (ip.startsWith('192.') || ip.startsWith('10.') || ip.startsWith('172.'))) {
+      return ip;
+    }
+  }
+  
+  // Fallback to old format for compatibility
   const matches = output.match(/inet (\d+\.\d+\.\d+\.\d+)/g) || [];
   const ips = matches
     .map(m => m.replace('inet ', ''))
@@ -57,9 +68,9 @@ function ConnectDevice() {
     setMessage('Switching device to TCP/IP mode...');
     try {
       await window.electronAPI.adbTcpip(deviceId, 5555);
-      setMessage('Getting device IP in TCP/IP mode...');
+      setMessage('Getting device IP from WiFi interface...');
       await delay(5000);
-      const ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip addr');
+      const ipAddrOutput = await window.electronAPI.adbShell(deviceId, 'ip -f inet addr show wlan0');
       const deviceIp = extractIpFromIpAddr(ipAddrOutput);
       if (!deviceIp) {
         setMessage('Could not find a valid IP address for this device.');
