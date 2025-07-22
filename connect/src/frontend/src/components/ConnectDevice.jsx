@@ -106,16 +106,26 @@ function ConnectDevice() {
       {!method && (
         <div className="space-y-4 flex flex-col items-center">
           <button
-            className="w-1/2 p-2 bg-emerald-700/70  text-white rounded hover:bg-teal-700 hover:scale-105 transition-transform duration-200"
+            className="relative w-1/2 p-4 rounded-2xl border border-emerald-400/40 text-emerald-100 font-medium hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-emerald-800/20 overflow-hidden"
             onClick={() => setMethod('wifi')}
           >
-            Connect via WiFi
+            {/* Glassmorphism background */}
+            <div 
+              className="absolute inset-0 bg-emerald-700/20 rounded-2xl"
+              style={{ backdropFilter: 'blur(12px)' }}
+            ></div>
+            <span className="relative z-10">Connect via WiFi</span>
           </button>
           <button
-            className="w-1/2 p-2 bg-emerald-800/70 text-white rounded   hover:bg-teal-700 hover:scale-105 transition-transform duration-200"
+            className="relative w-1/2 p-4 rounded-2xl border border-emerald-400/40 text-emerald-100 font-medium hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-emerald-800/20 overflow-hidden"
             onClick={() => setMethod('usb')}
           >
-            Connect via USB
+            {/* Glassmorphism background */}
+            <div 
+              className="absolute inset-0 bg-emerald-800/20 rounded-2xl"
+              style={{ backdropFilter: 'blur(12px)' }}
+            ></div>
+            <span className="relative z-10">Connect via USB</span>
           </button>
         </div>
       )}
@@ -127,7 +137,7 @@ function ConnectDevice() {
             placeholder="IP Address"
             value={ip}
             onChange={(e) => setIp(e.target.value)}
-            className="w-full p-2 border bg-emerald-100/50 border-[#04806b] rounded focus:ring-2 focus:ring-[#04806b] focus:outline-none"
+            className="w-full p-3 border border-emerald-400/40 rounded-2xl bg-emerald-900/10 text-emerald-100 placeholder-emerald-300/70 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none transition-all duration-200 backdrop-blur-sm"
             required
           />
           <input
@@ -135,48 +145,68 @@ function ConnectDevice() {
             placeholder="Port"
             value={port}
             onChange={(e) => setPort(e.target.value)}
-            className="w-full p-2 border bg-emerald-100/50 border-[#04806b] rounded focus:ring-2 focus:ring-[#04806b] focus:outline-none"
+            className="w-full p-3 border border-emerald-400/40 rounded-2xl bg-emerald-900/10 text-emerald-100 placeholder-emerald-300/70 focus:ring-2 focus:ring-emerald-400/50 focus:outline-none transition-all duration-200 backdrop-blur-sm"
             required
           />
           <button
             type="submit"
-            className="w-full p-2 bg-[#04806b] text-white rounded hover:bg-emerald-700 transition"
+            className="relative w-full p-4 rounded-2xl border border-emerald-400/40 text-emerald-100 font-medium hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-emerald-800/20 overflow-hidden"
           >
-            Connect
+            {/* Glassmorphism background */}
+            <div 
+              className="absolute inset-0 bg-emerald-600/20 rounded-2xl"
+              style={{ backdropFilter: 'blur(12px)' }}
+            ></div>
+            <span className="relative z-10">Connect</span>
           </button>
           <button
             type="button"
-            className="w-full p-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition"
+            className="relative w-full p-4 rounded-2xl border border-gray-400/40 text-gray-300 font-medium hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-gray-800/20 overflow-hidden"
             onClick={() => setMethod('')}
           >
-            Back
+            {/* Glassmorphism background */}
+            <div 
+              className="absolute inset-0 bg-gray-600/20 rounded-2xl"
+              style={{ backdropFilter: 'blur(12px)' }}
+            ></div>
+            <span className="relative z-10">Back</span>
           </button>
         </form>
       )}
 
       {method === 'usb' && (
         <div className="mt-4">
-          <div className="font-semibold mb-2 text-[#04806b]">USB connected devices</div>
+          <div className="font-semibold mb-4 text-emerald-100 text-lg">USB connected devices</div>
           <div>
             {usbDevices.length === 0 && (
-              <div className="text-gray-500 text-center">No USB devices found</div>
+              <div className="text-emerald-300/70 text-center py-8 rounded-2xl border border-emerald-400/40 bg-emerald-900/10 backdrop-blur-sm">No USB devices found</div>
             )}
             {usbDevices.map(deviceId => (
               <button
                 key={deviceId}
-                className="block w-full text-left p-2 mb-1 bg-white border border-[#04806b] rounded hover:bg-emerald-50 hover:border-emerald-700 transition"
+                className="relative block w-full text-left p-4 mb-2 border border-emerald-400/40 rounded-2xl hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-emerald-800/20 overflow-hidden"
                 onClick={() => handleUsbDeviceClick(deviceId)}
               >
-                <span className="text-[#04806b]">{deviceId}</span>
+                {/* Glassmorphism background */}
+                <div 
+                  className="absolute inset-0 bg-emerald-900/10 rounded-2xl"
+                  style={{ backdropFilter: 'blur(12px)' }}
+                ></div>
+                <span className="relative z-10 text-emerald-100 font-mono font-medium">{deviceId}</span>
               </button>
             ))}
           </div>
           <button
             type="button"
-            className="w-full p-2 mt-4 bg-gray-400 text-white rounded hover:bg-gray-500 transition"
+            className="relative w-full p-4 mt-4 rounded-2xl border border-gray-400/40 text-gray-300 font-medium hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-gray-800/20 overflow-hidden"
             onClick={() => setMethod('')}
           >
-            Back
+            {/* Glassmorphism background */}
+            <div 
+              className="absolute inset-0 bg-gray-600/20 rounded-2xl"
+              style={{ backdropFilter: 'blur(12px)' }}
+            ></div>
+            <span className="relative z-10">Back</span>
           </button>
         </div>
       )}
