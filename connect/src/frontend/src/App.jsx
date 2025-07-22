@@ -33,7 +33,7 @@ function App() {
         <HashRouter>
           <Background>
           
-          <h1 className="text-4xl font-bold text-teal-600 mb-8 "
+          <h1 className="text-4xl font-bold text-teal-600 mt-10 mb-8 "
 
           >ADB Manager</h1>
           <Routes>

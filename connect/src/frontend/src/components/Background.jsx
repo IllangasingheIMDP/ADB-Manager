@@ -1,16 +1,25 @@
 import React from 'react';
+import Beams from './Beams';
 
 const Background = ({ children }) => {
   return (
-    <div className="relative flex flex-col h-full w-full items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
-      {/* Black blur overlay */}
-      <div 
-        className="absolute inset-0 bg-black/10"
-        style={{ backdropFilter: 'blur(2px)' }}
-      ></div>
+    <div className="relative w-full min-h-screen overflow-y-auto hide-scrollbar">
+      {/* Background - fixed position */}
+      <div className="fixed inset-0 z-0">
+        <Beams
+    beamWidth={2}
+    beamHeight={15}
+    beamNumber={12}
+    lightColor="#2ab566"
+    speed={2}
+    noiseIntensity={1.75}
+    scale={0.2}
+    rotation={45}
+  />
+      </div>
       
-      {/* Content */}
-      <div className="relative z-10 flex flex-col h-full w-full items-center justify-center">
+      {/* Content wrapper - allows scrolling */}
+      <div className="relative z-10 flex flex-col items-center justify-start min-h-screen py-8">
         {children}
       </div>
     </div>
