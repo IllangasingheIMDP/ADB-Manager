@@ -1,20 +1,20 @@
 import React from 'react';
-import Beams from './Beams';
+import Particles from './Particles';
 
 const Background = ({ children }) => {
   return (
     <div className="relative w-full min-h-screen overflow-y-auto hide-scrollbar">
       {/* Background - fixed position */}
-      <div className="fixed inset-0 z-0">
-        <Beams
-    beamWidth={2}
-    beamHeight={15}
-    beamNumber={12}
-    lightColor="#2ab566"
-    speed={2}
-    noiseIntensity={1.75}
-    scale={0.2}
-    rotation={45}
+      <div className="fixed bg-black inset-0 z-0">
+      <Particles
+    particleColors={['#086648','#13b07e','#13b062','#18b89d']}
+    particleCount={200}
+    particleSpread={10}
+    speed={0.2}
+    particleBaseSize={150}
+    moveParticlesOnHover={true}
+    alphaParticles={false}
+    disableRotation={false}
   />
       </div>
       
