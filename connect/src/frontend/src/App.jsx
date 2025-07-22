@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import DeviceList from './components/DeviceList';
 import ConnectDevice from './components/ConnectDevice';
+
 import Commands from './pages/Commands';
 import FileExplorer from './pages/FileExplorer';
 import Device from './pages/Device';
@@ -65,6 +66,9 @@ function App() {
             <Route path="/explorer/:deviceId" element={<FileExplorer />} />
 
           </Routes>
+          
+          {/* Chatbot - appears on all pages */}
+         
         </div>
       </HashRouter>
     </NotificationProvider>

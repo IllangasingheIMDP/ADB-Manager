@@ -3,12 +3,12 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
 require('dotenv').config();
-const fetch=require('node-fetch')
+const fetch = require('node-fetch');
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
 // Store active scrcpy processes for each device
 const activeAudioStreams = new Map();
-const activeVideoStreams=new Map();
+const activeVideoStreams = new Map();
 
 // Get the correct scrcpy path based on platform and whether app is packaged
 function getScrcpyPath() {
@@ -44,49 +44,56 @@ function createWindow() {
       contextIsolation: true,
       enableRemoteModule: false,
       nodeIntegration: false,
-      experimentalFeatures: true,
+      webSecurity: true,
     },
-    backgroundColor: '#00000000',
-    transparent: true,
+    backgroundColor: '#ffffff',
+    show: false, // Don't show until ready
   });
 
   const isDev = !app.isPackaged;
+
+  // Show window when ready to prevent flash
+  win.once('ready-to-show', () => {
+    win.show();
+  });
 
   win.loadURL(
     isDev
       ? 'http://localhost:3000'
       : `file://${path.join(__dirname, 'src/frontend/dist/index.html')}`
   );
+
+  // Optional: Open DevTools in development
+  
 }
 
-ipcMain.handle('chatbot:ask',async(event,userMessage)=>{
+ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        Authorization:`Bearer ${process.env.GROQ_API_KEY}`
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model:'meta-llama/llama-4-scout-17b-16e-instruct',
-        message:[{
-          role:'system',
-          content:'You are an ADB expert assistant helping users troubleshoot and run ADB commands.'
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        messages: [{
+          role: 'system',
+          content: 'You are an ADB expert assistant helping users troubleshoot and run ADB commands.'
         },
-      {
-        role:'user',
-        content:userMessage
-      }
-      ]
+        {
+          role: 'user',
+          content: userMessage
+        }]
       })
-    })
-    const data=await res.json()
-    return data.choices?.[0]?.message?.content || 'No responce received';
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || 'No response received';
   } catch (error) {
-    console.error('Groq CHatbot API error',error)
-    return 'Error connecting to chatbot. Please check your internet connection or API key.'
+    console.error('Groq Chatbot API error', error);
+    return 'Error connecting to chatbot. Please check your internet connection or API key.';
   }
-})
+});
 
 ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
   return new Promise((resolve,reject)=>{
@@ -120,10 +127,10 @@ ipcMain.handle('start vidoe-stream',async(event,deviceId)=>{
       });
        // Give it a moment to start
       setTimeout(() => {
-        if (activeAudioStreams.has(deviceId)) {
-          resolve('Audio stream started successfully');
+        if (activeVideoStreams.has(deviceId)) {
+          resolve('Video stream started successfully');
         } else {
-          reject('Failed to start audio stream');
+          reject('Failed to start video stream');
         }
       }, 2000);
 
