@@ -1,20 +1,22 @@
 import React from 'react';
-import Beams from './Beams';
+import LightRays from './LightRays';
 
 const Background = ({ children }) => {
   return (
-    <div className="relative w-full min-h-screen overflow-y-auto hide-scrollbar">
+    <div className="relative w-full min-h-screen bg-black overflow-y-auto hide-scrollbar">
       {/* Background - fixed position */}
       <div className="fixed inset-0 z-0">
-        <Beams
-    beamWidth={2}
-    beamHeight={15}
-    beamNumber={12}
-    lightColor="#2ab566"
-    speed={2}
-    noiseIntensity={1.75}
-    scale={0.2}
-    rotation={45}
+        <LightRays
+    raysOrigin="top-center"
+    raysColor="#2ab566"
+    raysSpeed={1.5}
+    lightSpread={1.8}
+    rayLength={2.0}
+    followMouse={true}
+    mouseInfluence={0.1}
+    noiseAmount={0.1}
+    distortion={0.05}
+    className="custom-rays"
   />
       </div>
       
