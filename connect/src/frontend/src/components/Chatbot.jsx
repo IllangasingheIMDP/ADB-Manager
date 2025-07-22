@@ -255,7 +255,7 @@ const Chatbot = () => {
                           p-3 rounded-2xl text-sm leading-relaxed
                           ${message.sender === 'user'
                             ? 'bg-[#04806b] text-white rounded-br-md'
-                            : 'bg-white/20 text-white rounded-bl-md border border-white/10'
+                            : 'bg-black/30 text-white rounded-bl-md border border-white/10'
                           }
                         `}
                         style={message.sender === 'bot' ? { backdropFilter: 'blur(8px)' } : {}}

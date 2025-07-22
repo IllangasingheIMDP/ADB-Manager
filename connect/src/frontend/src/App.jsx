@@ -6,6 +6,7 @@ import ChatBot from './components/ChatBot';
 import Commands from './pages/Commands';
 import FileExplorer from './pages/FileExplorer';
 import Device from './pages/Device';
+import Background from './components/Background';
 import { NotificationProvider } from './components/NotificationProvider';
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -30,7 +31,8 @@ function App() {
     <ErrorBoundary>
       <NotificationProvider>
         <HashRouter>
-          <div className="flex flex-col h-full w-full  items-center justify-center overflow-y-auto min-h-screen bg-[url('/home_bg.jpg')] bg-cover bg-top bg-no-repeat hide-scrollbar">
+          <Background>
+          
           <h1 className="text-4xl font-bold text-teal-600 mb-8 "
 
           >ADB Manager</h1>
@@ -69,7 +71,7 @@ function App() {
           
           {/* Chatbot - appears on all pages */}
           <ChatBot />
-        </div>
+        </Background>
       </HashRouter>
     </NotificationProvider>
     </ErrorBoundary>
