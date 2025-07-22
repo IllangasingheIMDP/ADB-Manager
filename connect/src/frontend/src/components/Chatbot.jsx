@@ -39,10 +39,21 @@ const Chatbot = () => {
       .message-content {
         word-wrap: break-word;
         overflow-wrap: break-word;
+        line-height: 1.5;
       }
       .message-content pre {
         max-width: 100%;
         overflow-x: auto;
+      }
+      .markdown-content {
+        line-height: 1.6;
+      }
+      .markdown-content h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      .markdown-content h3:first-child {
+        margin-top: 0;
       }
     `;
     document.head.appendChild(style);
@@ -53,9 +64,9 @@ const Chatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Format message text with proper line breaks and code highlighting
+  // Format message text with proper markdown formatting
   const formatMessage = (text) => {
-    // Split by code blocks (triple backticks)
+    // Split by code blocks (triple backticks) first
     const parts = text.split(/(```[\s\S]*?```)/g);
     
     return parts.map((part, index) => {
@@ -63,32 +74,177 @@ const Chatbot = () => {
         // Code block
         const code = part.slice(3, -3).trim();
         return (
-          <div key={index} className="my-2">
+          <div key={index} className="my-3">
             <div className="bg-black/30 rounded-md p-3 font-mono text-sm border border-white/20">
               <pre className="whitespace-pre-wrap break-all">{code}</pre>
             </div>
           </div>
         );
       } else {
-        // Regular text with inline code
-        const textParts = part.split(/(`[^`]+`)/g);
+        // Process markdown formatting for regular text
         return (
-          <span key={index}>
-            {textParts.map((textPart, textIndex) => {
-              if (textPart.startsWith('`') && textPart.endsWith('`')) {
-                return (
-                  <span 
-                    key={textIndex} 
-                    className="bg-black/20 px-1 py-0.5 rounded text-xs font-mono border border-white/10"
-                  >
-                    {textPart.slice(1, -1)}
-                  </span>
-                );
-              }
-              return <span key={textIndex}>{textPart}</span>;
-            })}
+          <div key={index} className="markdown-content">
+            {formatMarkdownText(part)}
+          </div>
+        );
+      }
+    });
+  };
+
+  // Helper function to format markdown text
+  const formatMarkdownText = (text) => {
+    // Split text into lines to handle headers and lists properly
+    const lines = text.split('\n');
+    const elements = [];
+    let currentElement = [];
+    let inList = false;
+
+    lines.forEach((line, lineIndex) => {
+      const trimmedLine = line.trim();
+      
+      // Handle headers
+      if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**') && trimmedLine.length > 4) {
+        // Flush current element
+        if (currentElement.length > 0) {
+          elements.push(
+            <div key={`text-${elements.length}`} className="mb-2">
+              {formatInlineMarkdown(currentElement.join('\n'))}
+            </div>
+          );
+          currentElement = [];
+        }
+        
+        const headerText = trimmedLine.slice(2, -2).trim();
+        elements.push(
+          <h3 key={`header-${lineIndex}`} className="text-lg font-bold text-emerald-300 mb-2 mt-4 first:mt-0">
+            {headerText}
+          </h3>
+        );
+        inList = false;
+      }
+      // Handle section dividers (===== or -----)
+      else if (trimmedLine.match(/^[=-]{5,}$/)) {
+        // Flush current element
+        if (currentElement.length > 0) {
+          elements.push(
+            <div key={`text-${elements.length}`} className="mb-2">
+              {formatInlineMarkdown(currentElement.join('\n'))}
+            </div>
+          );
+          currentElement = [];
+        }
+        
+        elements.push(
+          <hr key={`divider-${lineIndex}`} className="border-white/20 my-3" />
+        );
+        inList = false;
+      }
+      // Handle bullet points
+      else if (trimmedLine.startsWith('* ')) {
+        // Flush current element if not already in a list
+        if (currentElement.length > 0 && !inList) {
+          elements.push(
+            <div key={`text-${elements.length}`} className="mb-2">
+              {formatInlineMarkdown(currentElement.join('\n'))}
+            </div>
+          );
+          currentElement = [];
+        }
+        
+        const listItem = trimmedLine.slice(2).trim();
+        elements.push(
+          <div key={`bullet-${lineIndex}`} className="flex items-start mb-1 ml-4">
+            <span className="text-emerald-400 mr-2 mt-1 text-xs">•</span>
+            <span>{formatInlineMarkdown(listItem)}</span>
+          </div>
+        );
+        inList = true;
+      }
+      // Handle numbered steps
+      else if (trimmedLine.match(/^\d+\.\s+/)) {
+        // Flush current element if not already in a list
+        if (currentElement.length > 0 && !inList) {
+          elements.push(
+            <div key={`text-${elements.length}`} className="mb-2">
+              {formatInlineMarkdown(currentElement.join('\n'))}
+            </div>
+          );
+          currentElement = [];
+        }
+        
+        const match = trimmedLine.match(/^(\d+)\.\s+(.+)$/);
+        if (match) {
+          const [, number, content] = match;
+          elements.push(
+            <div key={`number-${lineIndex}`} className="flex items-start mb-2 ml-4">
+              <span className="text-emerald-400 mr-3 mt-0.5 font-semibold text-sm min-w-[20px]">
+                {number}.
+              </span>
+              <span>{formatInlineMarkdown(content)}</span>
+            </div>
+          );
+        }
+        inList = true;
+      }
+      // Empty line - flush current element
+      else if (trimmedLine === '') {
+        if (currentElement.length > 0) {
+          elements.push(
+            <div key={`text-${elements.length}`} className="mb-2">
+              {formatInlineMarkdown(currentElement.join('\n'))}
+            </div>
+          );
+          currentElement = [];
+        }
+        inList = false;
+      }
+      // Regular text
+      else {
+        currentElement.push(line);
+        inList = false;
+      }
+    });
+
+    // Flush any remaining content
+    if (currentElement.length > 0) {
+      elements.push(
+        <div key={`text-${elements.length}`} className="mb-2">
+          {formatInlineMarkdown(currentElement.join('\n'))}
+        </div>
+      );
+    }
+
+    return elements;
+  };
+
+  // Helper function to format inline markdown (bold, italic, code)
+  const formatInlineMarkdown = (text) => {
+    // Handle inline code first
+    const parts = text.split(/(`[^`]+`)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <span 
+            key={index} 
+            className="bg-black/20 px-1 py-0.5 rounded text-xs font-mono border border-white/10 mx-0.5"
+          >
+            {part.slice(1, -1)}
           </span>
         );
+      } else {
+        // Handle bold text (**text**)
+        const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+        return boldParts.map((boldPart, boldIndex) => {
+          if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+            return (
+              <strong key={`${index}-${boldIndex}`} className="font-semibold text-emerald-200">
+                {boldPart.slice(2, -2)}
+              </strong>
+            );
+          }
+          return <span key={`${index}-${boldIndex}`}>{boldPart}</span>;
+        });
       }
     });
   };
