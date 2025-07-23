@@ -3,6 +3,7 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
 
+
 // Load environment variables
 const isDev = !app.isPackaged;
 if (isDev) {
@@ -168,6 +169,10 @@ Always be concise but thorough, and tailor your responses to both beginners and 
     }
   }
 });
+ipcMain.handle('is-file', async (_, path) => {
+  const fs =require('fs')
+  return fs.lstatSync(path).isFile();
+})
 
 ipcMain.handle('start-vidoe-stream',async(event,deviceId)=>{
   return new Promise((resolve,reject)=>{

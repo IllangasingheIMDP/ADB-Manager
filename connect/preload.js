@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer,webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   adbDevices: () => ipcRenderer.invoke('adb-devices'),
@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopAudioStream: (deviceId) => ipcRenderer.invoke('stop-audio-stream', deviceId),
   checkScrcpy: () => ipcRenderer.invoke('check-scrcpy'),
   chatbotAsk:(userMessage)=>ipcRenderer.invoke('chatbot:ask',userMessage),
-  showOpenDialog: () => ipcRenderer.invoke('show-open-dialog')
+  showOpenDialog: () => ipcRenderer.invoke('show-open-dialog'),
+  isFile: (path) => ipcRenderer.invoke('is-file', path),
+  getPathForFile: (file) => webUtils.getPathForFile(file)
 
 });
