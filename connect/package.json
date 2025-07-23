@@ -1,12 +1,16 @@
 {
   "name": "adb-manager",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Devices Connect",
   "main": "main.js",
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && electron .\"",
     "start:react": "cd src/frontend && npm run dev",
     "build": "npm run build:react && electron-builder",
+    "build:all": "npm run build:react && electron-builder --win --linux",
+    "build:win": "npm run build:react && electron-builder --win",
+    "build:mac": "npm run build:react && electron-builder --mac",
+    "build:linux": "npm run build:react && electron-builder --linux",
     "build:react": "cd src/frontend && npm run build",
     "electron": "electron ."
   },
@@ -53,7 +57,22 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/frontend/public/logo.ico"
+      "icon": "src/frontend/public/logoNew.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "src/frontend/public/logoNew.icns",
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "src/frontend/public/logoNew.png",
+      "category": "Development"
     }
   }
 }
