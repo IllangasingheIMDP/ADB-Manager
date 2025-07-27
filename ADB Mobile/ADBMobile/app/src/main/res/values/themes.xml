@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ADBMobile" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/emerald_400</item>
+        <item name="colorPrimaryVariant">@color/emerald_500</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary brand colors -->
+        <item name="colorSecondary">@color/emerald_300</item>
+        <item name="colorSecondaryVariant">@color/emerald_600</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Surface and background colors -->
+        <item name="android:background">@color/dark_bg</item>
+        <item name="colorSurface">@color/card_bg</item>
+        <item name="colorOnSurface">@color/emerald_50</item>
+
+        <!-- Status and navigation bar -->
+        <item name="android:statusBarColor">@color/dark_bg</item>
+        <item name="android:navigationBarColor">@color/dark_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Text input styles -->
+        <item name="textInputStyle">@style/GlassmorphismTextInput</item>
+
+        <!-- Button styles -->
+        <item name="materialButtonStyle">@style/GlassmorphismButton</item>
+
+        <!-- Card styles -->
+        <item name="cardViewStyle">@style/GlassmorphismCard</item>
+
+        <!-- Text appearance -->
+        <item name="textAppearanceHeadline6">@style/GlassmorphismTitle</item>
+        <item name="textAppearanceSubtitle1">@style/GlassmorphismSubtitle</item>
+        <item name="textAppearanceSubtitle2">@style/GlassmorphismSectionHeader</item>
+        <item name="textAppearanceBody1">@style/GlassmorphismStatusText</item>
+
+        <!-- Ripple and selection colors -->
+        <item name="colorControlHighlight">@color/emerald_300</item>
+        <item name="colorControlNormal">@color/emerald_400</item>
+    </style>
+</resources>

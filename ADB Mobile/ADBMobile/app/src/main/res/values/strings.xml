@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ADB Mobile</string>
+    <string name="enter_pc_ip_e_g_192_168_1_100">Enter PC IP (e.g., 192.168.1.100)</string>
+    <string name="enter_port_e_g_5000">Enter Port (e.g., 5000)</string>
+    <string name="connect_to_server">Connect to Server</string>
+    <string name="waiting_for_file">Waiting for file…</string>
+    <string name="select_and_upload_file">Select and Upload File</string>
+</resources>
