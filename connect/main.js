@@ -3,6 +3,21 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
 
+function getWiFiIPv4() {
+  const interfaces = os.networkInterfaces();
+  const wifiInterfaces = ['Wi-Fi', 'Wireless LAN adapter Wi-Fi', 'wlan0']; // common WiFi interface names
+  for (const name of wifiInterfaces) {
+    if (interfaces[name]) {
+      for (const config of interfaces[name]) {
+        if (config.family === 'IPv4' && !config.internal) {
+          return config.address;
+        }
+      }
+    }
+  }
+  return '127.0.0.1';
+}
+
 
 // Load environment variables
 const isDev = !app.isPackaged;
@@ -44,6 +59,9 @@ function getScrcpyPath() {
     // Production mode
     return path.join(process.resourcesPath, 'bin', platformDir, platform === 'win32' ? 'scrcpy.exe' : 'scrcpy');
   }
+}
+if (!isDev) {
+  require('./src/backend/server.js');
 }
 
 function createWindow() {
@@ -396,7 +414,9 @@ ipcMain.handle('adb-devices', async () => {
 });
 
 ipcMain.handle('adb-connect', async (event, ip, port) => {
-  return new Promise((resolve, reject) => {
+  
+  try {
+    await new Promise((resolve, reject) => {
     exec(`adb connect ${ip}:${port}`, (error, stdout, stderr) => {
       if (error) {
         reject(error);
@@ -405,6 +425,32 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
       }
     });
   });
+
+  // Step 2: Create config file with WebSocket details
+    const configPath = path.join(__dirname, 'ws-config.json');
+    let wsConfig = { ip: getLocalIP(), port: 5000 };
+    console.log(getLocalIP())
+
+    
+
+    const result = await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
+console.log(result)
+    // Step 3: Push config file to Android device
+    const devicePath = `/sdcard/ws-config.json`; // Adjust path based on app permissions
+    await new Promise((resolve, reject) => {
+      exec(`adb -s ${id} push ${configPath} ${devicePath}`, (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(stdout);
+        }
+      });
+    });
+
+    return { success: true, message: 'TCP/IP enabled and config pushed' };
+  } catch (error) {
+    return {success:false, message:error.message}
+  }
 });
 
 ipcMain.handle('adb:shell', async (event, deviceId, command) => {
@@ -427,15 +473,24 @@ ipcMain.handle('adb:shell', async (event, deviceId, command) => {
 });
 
 ipcMain.handle('tcpip', async (event, id, port) => {
-  return new Promise((resolve, reject) => {
-    exec(`adb -s ${id} tcpip ${port}`, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(stdout);
-      }
+  try {
+    // Step 1: Enable TCP/IP mode via ADB
+    await new Promise((resolve, reject) => {
+      exec(`adb -s ${id} tcpip ${port}`, (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(stdout);
+        }
+      });
     });
-  });
+
+    
+
+    return { success: true, message: 'TCP/IP enabled ' };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });
 
 // Handle file dialog

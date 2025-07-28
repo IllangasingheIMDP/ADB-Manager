@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Base64
 import android.util.Log
 import android.widget.Button
@@ -34,12 +36,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var connectButton: Button
     private lateinit var statusText: TextView
     private lateinit var uploadButton: Button
+    private lateinit var notificationToggleButton: Button
     private lateinit var sharedPreferences: SharedPreferences
     private var webSocketClient: WebSocketClient? = null
     private var selectedFileUri: Uri? = null
+    private var isNotificationSharingEnabled = false
     private val TAG = "MainActivity"
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
-    @SuppressLint("SetTextI18n")
+
+    private val notificationListenerPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (isNotificationListenerEnabled()) {
+            toggleNotificationSharing() // Retry enabling notification sharing
+        } else {
+            Toast.makeText(this, "Notification listener permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private val filePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             selectedFileUri = uri
@@ -61,6 +75,7 @@ class MainActivity : AppCompatActivity() {
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
+
     private fun showNotification(title: String, message: String) {
         val builder = NotificationCompat.Builder(this, "upload_channel")
             .setSmallIcon(android.R.drawable.stat_sys_upload_done)
@@ -75,7 +90,8 @@ class MainActivity : AppCompatActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
@@ -83,7 +99,6 @@ class MainActivity : AppCompatActivity() {
                 )
                 return
             }
-
             return
         }
         notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
@@ -95,7 +110,8 @@ class MainActivity : AppCompatActivity() {
         createNotificationChannel()
         try {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
@@ -110,7 +126,6 @@ class MainActivity : AppCompatActivity() {
             val launchedFromShare = intent?.action == Intent.ACTION_SEND && intent.type != null
 
             if (launchedFromShare) {
-                // Handle file shared externally (e.g., from file manager)
                 selectedFileUri = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
                 if (selectedFileUri != null && !savedIp.isNullOrEmpty() && !savedPort.isNullOrEmpty()) {
                     connectToWebSocket(savedIp, savedPort, silent = true)
@@ -121,7 +136,6 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            // Normal app launch with UI
             setContentView(R.layout.activity_main)
 
             ipInput = findViewById(R.id.ipInput)
@@ -129,11 +143,20 @@ class MainActivity : AppCompatActivity() {
             connectButton = findViewById(R.id.connectButton)
             statusText = findViewById(R.id.statusText)
             uploadButton = findViewById(R.id.uploadButton)
+            notificationToggleButton = findViewById(R.id.notificationToggleButton)
 
             if (!savedIp.isNullOrEmpty() && !savedPort.isNullOrEmpty()) {
                 ipInput.setText(savedIp)
                 portInput.setText(savedPort)
                 connectToWebSocket(savedIp, savedPort)
+            }
+
+            isNotificationSharingEnabled = sharedPreferences.getBoolean("notification_sharing_enabled", false)
+            if (isNotificationSharingEnabled && isNotificationListenerEnabled()) {
+                notificationToggleButton.text = "Disable Notification Sharing"
+                NotificationListener.webSocketClient = webSocketClient
+                val intent = Intent(this, NotificationListener::class.java)
+                startService(intent)
             }
 
             connectButton.setOnClickListener {
@@ -152,6 +175,10 @@ class MainActivity : AppCompatActivity() {
                 filePicker.launch("*/*")
             }
 
+            notificationToggleButton.setOnClickListener {
+                toggleNotificationSharing()
+            }
+
         } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate: ${e.message}", e)
             Toast.makeText(this, "Error initializing app: ${e.message}", Toast.LENGTH_LONG).show()
@@ -164,16 +191,51 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE)
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Permission granted, you can show the notification now
-                showNotification(title= "Shared File", message = "Your file was successfully shared.")
-            } else
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showNotification("Shared File", "Your file was successfully shared.")
+            } else {
                 Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun isNotificationListenerEnabled(): Boolean {
+        val component = ComponentName(this, NotificationListener::class.java)
+        val enabledListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        return enabledListeners?.contains(component.flattenToString()) == true
     }
 
     @SuppressLint("SetTextI18n")
-    private fun connectToWebSocket(ip: String, port: String,silent: Boolean = false) {
+    private fun toggleNotificationSharing() {
+        if (!isNotificationSharingEnabled) {
+            if (!isNotificationListenerEnabled()) {
+                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                notificationListenerPermissionLauncher.launch(intent)
+                return
+            }
+
+            isNotificationSharingEnabled = true
+            notificationToggleButton.text = "Disable Notification Sharing"
+            sharedPreferences.edit().putBoolean("notification_sharing_enabled", true).apply()
+            statusText.text = "Notification sharing enabled"
+
+            NotificationListener.webSocketClient = webSocketClient
+            val intent = Intent(this, NotificationListener::class.java)
+            startService(intent)
+        } else {
+            isNotificationSharingEnabled = false
+            notificationToggleButton.text = "Enable Notification Sharing"
+            sharedPreferences.edit().putBoolean("notification_sharing_enabled", false).apply()
+            statusText.text = "Notification sharing disabled"
+
+            val intent = Intent(this, NotificationListener::class.java)
+            stopService(intent)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun connectToWebSocket(ip: String, port: String, silent: Boolean = false) {
         val serverUri = try {
             URI("ws://$ip:$port")
         } catch (e: Exception) {
@@ -190,9 +252,10 @@ class MainActivity : AppCompatActivity() {
         webSocketClient = object : WebSocketClient(serverUri) {
             override fun onOpen(handshakedata: ServerHandshake?) {
                 runOnUiThread {
+                    NotificationListener.webSocketClient = this
                     if (silent) {
                         val fileName = getFileName(selectedFileUri!!) ?: "Shared File"
-                        uploadFile(selectedFileUri!!, silent = true) // Pass silent parameter
+                        uploadFile(selectedFileUri!!, silent = true)
                         finish()
                     } else {
                         statusText.text = "Connected to server"
@@ -286,6 +349,7 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG, "Error reading file: ${e.message}", e)
         }
     }
+
     private fun getFileName(uri: Uri): String? {
         var result: String? = null
         try {
