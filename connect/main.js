@@ -435,20 +435,9 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
     
 
     await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
-    await new Promise((resolve,reject)=>{
-      exec(`adb -s ${ip}:${port} shell mkdir /sdcard/ADB_Client`,(error,stdout,stderr)=>{
-        if(error){
-          console.log(error)
-          
-          resolve(error)
-        }else{
-          
-          resolve(stdout)
-        }
-      })
-    })
+    
     // Step 3: Push config file to Android device
-    const devicePath = `/sdcard/ADB_Client/ws-config.json`; // Adjust path based on app permissions
+    const devicePath = `/sdcard/Android/data/com.example.adbmobile/files/ADB_Client/ws-config.json`; // Adjust path based on app permissions
     await new Promise((resolve, reject) => {
       exec(`adb -s ${ip}:${port} push ${configPath} ${devicePath}`, (error, stdout, stderr) => {
         if (error) {
@@ -468,7 +457,8 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
 });
 
 ipcMain.handle('install-client-apk',async(event,deviceId)=>{
-  return new Promise((resolve,reject)=>{
+  try{
+  await new Promise((resolve,reject)=>{
     const apkPath=path.join(__dirname,'app-debug.apk')
     const adbCommand = `adb -s ${deviceId} install ${apkPath}`
     exec(adbCommand,(error,stdout,stderr)=>{
@@ -479,6 +469,34 @@ ipcMain.handle('install-client-apk',async(event,deviceId)=>{
       }
     })
   })
+
+  let wsConfig = { ip: getWiFiIPv4(), port: 5000 };
+    console.log(wsConfig)
+    const fs =require('fs').promises
+    const configPath = path.join(__dirname, 'ws-config.json');
+
+    
+
+    await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
+    
+    // Step 3: Push config file to Android device
+    const devicePath = `/sdcard/Android/data/com.example.adbmobile/files/ADB_Client/ws-config.json`; // Adjust path based on app permissions
+    await new Promise((resolve, reject) => {
+      exec(`adb -s ${deviceId} push ${configPath} ${devicePath}`, (error, stdout, stderr) => {
+        if (error) {
+          
+          reject(error);
+        } else {
+          
+          resolve(stdout);
+        }
+      });
+    });
+    return { success: true, message: 'App is installed and config pushed' };
+}catch(error){
+  return {success:false,message:error.message}
+}
+
 })
 
 ipcMain.handle('adb:shell', async (event, deviceId, command) => {

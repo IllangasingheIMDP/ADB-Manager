@@ -5,7 +5,8 @@ const Notification = ({
   type = 'info', 
   duration = 4000, 
   onClose,
-  showIcon = true 
+  showIcon = true,
+  mobileData // New prop for mobile notification data
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -54,6 +55,14 @@ const Notification = ({
           iconColor: 'text-yellow-400',
           shadowColor: 'shadow-yellow-800'
         };
+      case 'mobile':
+        return {
+          borderColor: 'border-blue-400/40',
+          backgroundColor: 'bg-blue-900/20',
+          textColor: 'text-blue-100',
+          iconColor: 'text-blue-400',
+          shadowColor: 'shadow-blue-800'
+        };
       case 'info':
       default:
         return {
@@ -86,6 +95,12 @@ const Notification = ({
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
         );
+      case 'mobile':
+        return (
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zM6 4a1 1 0 011-1h6a1 1 0 011 1v10a1 1 0 01-1 1H7a1 1 0 01-1-1V4zm4 12a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          </svg>
+        );
       case 'info':
       default:
         return (
@@ -96,10 +111,121 @@ const Notification = ({
     }
   };
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      
+      if (diffMins < 1) return 'now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      
+      return date.toLocaleDateString();
+    } catch (error) {
+      return timestamp;
+    }
+  };
+
   if (!isVisible) return null;
 
   const styles = getTypeStyles();
 
+  // Render mobile notification layout
+  if (type === 'mobile' && mobileData) {
+    return (
+      <div className="relative z-100">
+        <div
+          className={`
+            min-w-80 max-w-md rounded-2xl border ${styles.borderColor} ${styles.shadowColor} shadow-lg 
+            relative overflow-hidden transition-all duration-300 ease-in-out
+            ${isAnimating ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95'}
+          `}
+        >
+          {/* Glassmorphism background */}
+          <div
+            className={`absolute rounded-2xl inset-0 ${styles.backgroundColor}`}
+            style={{ backdropFilter: 'blur(12px)' }}
+          ></div>
+          
+          {/* Content */}
+          <div className="relative z-10 p-4">
+            <div className="flex items-start gap-3">
+              {/* App icon/emoji */}
+              <div className="flex-shrink-0 text-lg mt-0.5">
+                {mobileData.appIcon}
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                {/* App name and timestamp header */}
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-xs font-medium ${styles.textColor} opacity-80`}>
+                    {mobileData.appName}
+                  </span>
+                  {mobileData.timestamp && (
+                    <span className={`text-xs ${styles.textColor} opacity-60`}>
+                      {formatTimestamp(mobileData.timestamp)}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Title */}
+                {mobileData.title && (
+                  <h4 className={`text-sm font-semibold ${styles.textColor} mb-1 leading-tight`}>
+                    {mobileData.title}
+                  </h4>
+                )}
+                
+                {/* Message text */}
+                {mobileData.text && (
+                  <p className={`text-sm ${styles.textColor} opacity-90 leading-relaxed`}>
+                    {mobileData.text}
+                  </p>
+                )}
+              </div>
+              
+              {/* Close button */}
+              <button
+                onClick={handleClose}
+                className={`
+                  flex-shrink-0 ${styles.iconColor} hover:opacity-70 
+                  transition-opacity duration-200 ml-2
+                `}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 rounded-b-2xl overflow-hidden">
+            <div
+              className={`h-full ${styles.iconColor.replace('text-', 'bg-')} transition-all ease-linear`}
+              style={{
+                width: '100%',
+                animation: `shrink ${duration}ms linear forwards`
+              }}
+            ></div>
+          </div>
+        </div>
+        
+        <style jsx>{`
+          @keyframes shrink {
+            from { width: 100%; }
+            to { width: 0%; }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Default notification layout (for simple messages)
   return (
     <div className="relative z-100">
       <div

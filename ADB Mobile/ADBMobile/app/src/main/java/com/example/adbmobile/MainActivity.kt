@@ -29,6 +29,11 @@ import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.io.IOException
 import java.net.URI
+import org.json.JSONObject
+import java.io.File
+import android.os.Environment
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var ipInput: EditText
@@ -53,6 +58,54 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Notification listener permission denied", Toast.LENGTH_SHORT).show()
         }
     }
+    private fun saveConfigToAppExternalDir(ip: String, port: String) {
+        try {
+            val configDir = getExternalFilesDir("ADB_Client")
+            if (configDir != null) {
+                if (!configDir.exists()) {
+                    configDir.mkdirs()
+                }
+                val configFile = File(configDir, "ws-config.json")
+                val jsonObject = JSONObject()
+                jsonObject.put("ip", ip)
+                jsonObject.put("port", port)
+                configFile.writeText(jsonObject.toString())
+                Log.i(TAG, "Saved IP and Port to config: $ip:$port")
+            } else {
+                Log.w(TAG, "App external files directory is null, cannot save config")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save config file: ${e.message}", e)
+        }
+    }
+
+
+    private fun loadConfigFromAppExternalDir() {
+        try {
+            val configDir = getExternalFilesDir("ADB_Client")
+            if (configDir != null) {
+                val configFile = File(configDir, "ws-config.json")
+                if (configFile.exists()) {
+                    val json = configFile.readText()
+                    val jsonObject = JSONObject(json)
+                    val ip = jsonObject.getString("ip")
+                    val port = jsonObject.getString("port")
+
+                    if (ip.isNotBlank() && port.isNotBlank()) {
+                        sharedPreferences.edit().putString("ip", ip).putString("port", port).apply()
+                        Log.i(TAG, "Loaded IP and Port from config: $ip:$port")
+                    }
+                } else {
+                    Log.w(TAG, "Config file does not exist at ${configFile.absolutePath}")
+                }
+            } else {
+                Log.w(TAG, "App external files directory is null")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to read config file: ${e.message}", e)
+        }
+    }
+
 
     private val filePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
@@ -107,7 +160,11 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+
         createNotificationChannel()
+        loadConfigFromAppExternalDir()
         try {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED
@@ -119,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             sharedPreferences = getSharedPreferences("WebSocketPrefs", MODE_PRIVATE)
-
+            loadConfigFromAppExternalDir()
             val savedIp = sharedPreferences.getString("ip", "")
             val savedPort = sharedPreferences.getString("port", "")
 
@@ -164,6 +221,7 @@ class MainActivity : AppCompatActivity() {
                 val port = portInput.text.toString().trim()
                 if (ip.isNotEmpty() && port.isNotEmpty()) {
                     sharedPreferences.edit().putString("ip", ip).putString("port", port).apply()
+                    saveConfigToAppExternalDir(ip, port)
                     connectToWebSocket(ip, port)
                 } else {
                     statusText.text = "Please enter IP and port"

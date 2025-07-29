@@ -29,7 +29,7 @@ wss.on('connection', (ws) => {
     try {
       // Ensure message is a string and trim any whitespace
       const messageStr = message.toString('utf8').trim();
-      console.log('Trimmed message:', messageStr);
+      
 
       const data = JSON.parse(messageStr);
 
