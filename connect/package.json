@@ -10,7 +10,7 @@
   },
   "license": "ISC",
   "scripts": {
-    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && electron .\"",
+    "start": "concurrently \"npm run start:react\" \"npm run backend:dev\" \"wait-on http://localhost:3000 && electron .\"",
     "start:react": "cd src/frontend && npm run dev",
     "build": "npm run build:react && electron-builder",
     "build:windows": "npm run build:react && electron-builder --win",
@@ -19,7 +19,9 @@
     "build:linux-tar": "npm run build:react && electron-builder --linux -c.linux.target=tar.gz",
     "build:cross-platform": "npm run build:react && electron-builder --win --linux -c.linux.target=tar.gz",
     "build:react": "cd src/frontend && npm run build",
-    "electron": "electron ."
+    "electron": "electron .",
+    "backend": "cd src/backend && node server.js",
+    "backend:dev": "cd src/backend && nodemon server.js"
   },
   "devDependencies": {
     "electron": "^37.2.3",
@@ -31,9 +33,12 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
     "react-router-dom": "^7.6.1",
     "sqlite3": "^5.1.7",
-    "wait-on": "^8.0.3"
+    "wait-on": "^8.0.3",
+    "ws": "^8.18.3"
   },
   "build": {
     "appId": "com.adbmanager.connect",
@@ -41,10 +46,17 @@
     "directories": {
       "output": "dist"
     },
+    "asarUnpack": [
+  "app-debug.apk"
+]
+
+    ,
     "files": [
       "main.js",
       "preload.js",
       ".env",
+      "ws-config.json", 
+      "app-debug.apk",
       "src/frontend/dist/**/*",
       "src/backend/**/*",
       "node_modules/**/*"
