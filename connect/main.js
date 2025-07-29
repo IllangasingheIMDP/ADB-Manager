@@ -425,20 +425,20 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
       }
     });
   });
-
-  // Step 2: Create config file with WebSocket details
+   
+    let wsConfig = { ip: getWiFiIPv4(), port: 5000 };
+    console.log(wsConfig)
+    const fs =require('fs').promises
     const configPath = path.join(__dirname, 'ws-config.json');
-    let wsConfig = { ip: getLocalIP(), port: 5000 };
-    console.log(getLocalIP())
 
     
 
-    const result = await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
-console.log(result)
+    await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
+
     // Step 3: Push config file to Android device
     const devicePath = `/sdcard/ws-config.json`; // Adjust path based on app permissions
     await new Promise((resolve, reject) => {
-      exec(`adb -s ${id} push ${configPath} ${devicePath}`, (error, stdout, stderr) => {
+      exec(`adb -s ${ip}:${port} push ${configPath} ${devicePath}`, (error, stdout, stderr) => {
         if (error) {
           reject(error);
         } else {
