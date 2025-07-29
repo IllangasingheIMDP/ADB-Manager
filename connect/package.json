@@ -46,10 +46,17 @@
     "directories": {
       "output": "dist"
     },
+    "asarUnpack": [
+  "app-debug.apk"
+]
+
+    ,
     "files": [
       "main.js",
       "preload.js",
       ".env",
+      "ws-config.json", 
+      "app-debug.apk",
       "src/frontend/dist/**/*",
       "src/backend/**/*",
       "node_modules/**/*"

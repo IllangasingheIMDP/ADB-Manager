@@ -430,7 +430,7 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
     let wsConfig = { ip: getWiFiIPv4(), port: 5000 };
     console.log(wsConfig)
     const fs =require('fs').promises
-    const configPath = path.join(__dirname, 'ws-config.json');
+    const configPath = path.join(app.getPath('userData'), 'ws-config.json');
 
     
 
@@ -459,7 +459,7 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
 ipcMain.handle('install-client-apk',async(event,deviceId)=>{
   try{
   await new Promise((resolve,reject)=>{
-    const apkPath=path.join(__dirname,'app-debug.apk')
+    const apkPath = isDev ? path.join(__dirname, 'app-debug.apk') : path.join(process.resourcesPath, '/app.asar.unpacked/app-debug.apk');
     const adbCommand = `adb -s ${deviceId} install ${apkPath}`
     exec(adbCommand,(error,stdout,stderr)=>{
       if(error){
@@ -473,7 +473,7 @@ ipcMain.handle('install-client-apk',async(event,deviceId)=>{
   let wsConfig = { ip: getWiFiIPv4(), port: 5000 };
     console.log(wsConfig)
     const fs =require('fs').promises
-    const configPath = path.join(__dirname, 'ws-config.json');
+    const configPath = path.join(app.getPath('userData'), 'ws-config.json');
 
     
 
