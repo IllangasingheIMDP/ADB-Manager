@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   chatbotAsk:(userMessage)=>ipcRenderer.invoke('chatbot:ask',userMessage),
   showOpenDialog: () => ipcRenderer.invoke('show-open-dialog'),
   isFile: (path) => ipcRenderer.invoke('is-file', path),
-  getPathForFile: (file) => webUtils.getPathForFile(file)
+  getPathForFile: (file) => webUtils.getPathForFile(file),
+  installClient:(deviceId)=>ipcRenderer.invoke('install-client-apk',deviceId)
 
 });

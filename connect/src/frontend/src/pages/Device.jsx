@@ -103,7 +103,16 @@ const Device = () => {
   const handleDeviceInfo = () => {
     setShowDeviceInfo(true);
   };
-
+  const handleInstall = async () => {
+    try {
+      console.log('Installing client APK on device:', deviceId);
+      await window.electronAPI.installClient(deviceId);
+      showSuccess('Client APK installed successfully');
+      
+    } catch (error) {
+      showError(getErrorMessage(error.message));
+    }
+  }
   const featureCards = [
     {
       title: 'Shell Commands',
@@ -249,6 +258,12 @@ const Device = () => {
                 className="px-4 py-2 rounded-lg bg-gray-500/20 text-gray-300 hover:bg-gray-500/30 transition backdrop-blur-sm text-sm border border-gray-400/30"
               >
                 Device Info
+              </button>
+              <button
+                onClick={handleInstall}
+                className="px-4 py-2 rounded-lg bg-gray-500/20 text-gray-300 hover:bg-gray-500/30 transition backdrop-blur-sm text-sm border border-gray-400/30"
+              >
+                Install Mobile App
               </button>
             </div>
           </div>

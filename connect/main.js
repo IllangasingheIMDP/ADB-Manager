@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
+const { stderr, stdout } = require('process');
 
 function getWiFiIPv4() {
   const interfaces = os.networkInterfaces();
@@ -434,14 +435,27 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
     
 
     await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
-
+    await new Promise((resolve,reject)=>{
+      exec(`adb -s ${ip}:${port} shell mkdir /sdcard/ADB_Client`,(error,stdout,stderr)=>{
+        if(error){
+          console.log(error)
+          
+          resolve(error)
+        }else{
+          
+          resolve(stdout)
+        }
+      })
+    })
     // Step 3: Push config file to Android device
-    const devicePath = `/sdcard/ws-config.json`; // Adjust path based on app permissions
+    const devicePath = `/sdcard/ADB_Client/ws-config.json`; // Adjust path based on app permissions
     await new Promise((resolve, reject) => {
       exec(`adb -s ${ip}:${port} push ${configPath} ${devicePath}`, (error, stdout, stderr) => {
         if (error) {
+          
           reject(error);
         } else {
+          
           resolve(stdout);
         }
       });
@@ -452,6 +466,20 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
     return {success:false, message:error.message}
   }
 });
+
+ipcMain.handle('install-client-apk',async(event,deviceId)=>{
+  return new Promise((resolve,reject)=>{
+    const apkPath=path.join(__dirname,'app-debug.apk')
+    const adbCommand = `adb -s ${deviceId} install ${apkPath}`
+    exec(adbCommand,(error,stdout,stderr)=>{
+      if(error){
+        reject(error)
+      }else{
+        resolve(stdout)
+      }
+    })
+  })
+})
 
 ipcMain.handle('adb:shell', async (event, deviceId, command) => {
   return new Promise((resolve, reject) => {
