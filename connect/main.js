@@ -98,6 +98,27 @@ function createWindow() {
   // Optional: Open DevTools in development
   
 }
+ipcMain.handle('save-temp-image', async (event, base64Data) => {
+  const fs =require('fs')
+  try {
+    const tempDir = path.join(app.getPath('temp'), 'connect-temp');
+    
+    // Create temp directory if it doesn't exist
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    // Create temp file path
+    const tempFilePath = path.join(tempDir, `clipboard_${Date.now()}.png`);
+    
+    // Write the base64 data to file
+    fs.writeFileSync(tempFilePath, Buffer.from(base64Data, 'base64'));
+    
+    return tempFilePath;
+  } catch (error) {
+    throw new Error(`Failed to save clipboard image: ${error.message}`);
+  }
+});
 
 ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   try {
@@ -388,19 +409,48 @@ ipcMain.handle('adb-pull', async (event, deviceId, filepath) => {
 
 ipcMain.handle('adb-push', async (event, deviceId, filepath) => {
   return new Promise((resolve, reject) => {
-    const destPath = '/sdcard/Airdroid';
-    const adbCommand = `adb -s ${deviceId} push "${filepath}" "${destPath}"`;
-    exec(adbCommand, (error, stdout, stderr) => {
-      if (error) {
-        reject(error.message);
-      } else if (stderr) {
-        reject(stderr);
-      } else {
-        resolve(stdout);
+    const destPath = '/sdcard/ADB_Client';
+    
+    // First create the directory if it doesn't exist
+    const mkdirCommand = `adb -s ${deviceId} shell mkdir -p ${destPath}`;
+    exec(mkdirCommand, (mkdirError) => {
+      if (mkdirError) {
+        reject(`Failed to create directory: ${mkdirError.message}`);
+        return;
       }
+
+      // Then push the file
+      const adbCommand = `adb -s ${deviceId} push "${filepath}" "${destPath}"`;
+      exec(adbCommand, (error, stdout, stderr) => {
+        if (error) {
+          reject(error.message);
+          return;
+        } 
+        if (stderr) {
+          reject(stderr);
+          return;
+        }
+
+        // After successful push, trigger media scanner
+        const filename = path.basename(filepath);
+        const fullPath = `${destPath}/${filename}`;
+        const scanCommand = `adb -s ${deviceId} shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://${fullPath}`;
+        
+        exec(scanCommand, (scanError, scanStdout, scanStderr) => {
+          if (scanError) {
+            console.log(`Media scan error: ${scanError.message}`);
+            // Still resolve since file was pushed successfully
+            resolve(stdout);
+          } else {
+            resolve(stdout + '\nMedia scan completed');
+          }
+        });
+      });
     });
   });
 });
+
+
 
 ipcMain.handle('adb-devices', async () => {
   return new Promise((resolve, reject) => {
@@ -427,7 +477,7 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
     });
   });
    
-    let wsConfig = { ip: getWiFiIPv4(), port: 5000 };
+    let wsConfig = { ip: getWiFiIPv4(), port: 8383 };
     console.log(wsConfig)
     const fs =require('fs').promises
     const configPath = path.join(app.getPath('userData'), 'ws-config.json');
@@ -470,7 +520,7 @@ ipcMain.handle('install-client-apk',async(event,deviceId)=>{
     })
   })
 
-  let wsConfig = { ip: getWiFiIPv4(), port: 5000 };
+  let wsConfig = { ip: getWiFiIPv4(), port: 8383 };
     console.log(wsConfig)
     const fs =require('fs').promises
     const configPath = path.join(app.getPath('userData'), 'ws-config.json');
@@ -557,10 +607,15 @@ ipcMain.handle('show-open-dialog', async () => {
 
 // Clean up active streams on app quit
 app.on('before-quit', () => {
+  const fs = require('fs')
   activeAudioStreams.forEach((process, deviceId) => {
     process.kill('SIGTERM');
   });
   activeAudioStreams.clear();
+  const tempDir = path.join(app.getPath('temp'), 'connect-temp');
+  if (fs.existsSync(tempDir)) {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 });
 
 app.whenReady().then(() => {

@@ -14,7 +14,7 @@ app.get('/api/devices', (req, res) => {
   res.json({ devices: [] });
 });
 
-const PORT = 5000;
+const PORT = 8383;
 const server = http.createServer(app);
 
 // WebSocket server setup

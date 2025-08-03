@@ -97,7 +97,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:5000');
+    const ws = new WebSocket('ws://localhost:8383');
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');

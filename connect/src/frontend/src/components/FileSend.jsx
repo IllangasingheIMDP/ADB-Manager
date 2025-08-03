@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNotification } from "../hooks/useNotification";
 
 function FileSend({ deviceId, onClose }) {
@@ -32,30 +32,27 @@ function FileSend({ deviceId, onClose }) {
     setIsDragOver(false);
   };
 
- const handleDrop = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  setIsDragOver(false);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
 
-  try {
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      const file = files[0];
-      // Use the exposed Electron utility
-      const filePath = window.electronAPI.getPathForFile(file);
-      if (filePath && file.name) {
-        setSelectedFile({ path: filePath, name: file.name });
-       
-      } else {
-        showError('Dropped file is invalid or missing file path. Please use the file selector.');
+    try {
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        const file = files[0];
+        // Use the exposed Electron utility
+        const filePath = window.electronAPI.getPathForFile(file);
+        if (filePath && file.name) {
+          setSelectedFile({ path: filePath, name: file.name });
+        } else {
+          showError('Dropped file is invalid or missing file path. Please use the file selector.');
+        }
       }
+    } catch (error) {
+      showError(`Error handling dropped file: ${error.message}`);
     }
-  } catch (error) {
-    showError(`Error handling dropped file: ${error.message}`);
-  }
-};
-
-
+  };
 
   const handleSend = async () => {
     if (!selectedFile) {
@@ -75,6 +72,46 @@ function FileSend({ deviceId, onClose }) {
     setSending(false);
     setSelectedFile(null); // Clear the selected file
   };
+
+  // Add clipboard paste handler
+  const handlePaste = async (e) => {
+    e.preventDefault();
+    try {
+      const items = e.clipboardData.items;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const blob = item.getAsFile();
+          // Convert blob to base64
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64Data = reader.result.split(',')[1];
+            // Send the base64 data to electron to save as temp file
+            try {
+              const tempFilePath = await window.electronAPI.saveTempImage(base64Data);
+              setSelectedFile({ 
+                path: tempFilePath, 
+                name: `clipboard_image_${new Date().getTime()}.png` 
+              });
+            } catch (error) {
+              showError(`Failed to process clipboard image: ${error.message}`);
+            }
+          };
+          reader.readAsDataURL(blob);
+          break;
+        }
+      }
+    } catch (error) {
+      showError(`Error handling clipboard paste: ${error.message}`);
+    }
+  };
+
+  // Add paste event listener
+  useEffect(() => {
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, []);
 
   return (
     <div className="p-6 bg-white/80 rounded-2xl shadow-lg border border-[#04806b]/30 min-w-[320px] relative">

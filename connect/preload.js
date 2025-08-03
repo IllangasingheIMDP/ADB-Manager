@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showOpenDialog: () => ipcRenderer.invoke('show-open-dialog'),
   isFile: (path) => ipcRenderer.invoke('is-file', path),
   getPathForFile: (file) => webUtils.getPathForFile(file),
-  installClient:(deviceId)=>ipcRenderer.invoke('install-client-apk',deviceId)
+  installClient:(deviceId)=>ipcRenderer.invoke('install-client-apk',deviceId),
+  saveTempImage: (base64Data) => ipcRenderer.invoke('save-temp-image', base64Data)
 
 });
