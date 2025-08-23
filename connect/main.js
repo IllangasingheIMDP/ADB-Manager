@@ -3,6 +3,10 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 const os = require('os');
 const { stderr, stdout } = require('process');
+const fs = require('fs').promises; // Use promises for async fs operations
+const WebSocket = require('ws');
+
+
 
 function getWiFiIPv4() {
   const interfaces = os.networkInterfaces();
@@ -18,7 +22,6 @@ function getWiFiIPv4() {
   }
   return '127.0.0.1';
 }
-
 
 // Load environment variables
 const isDev = !app.isPackaged;
@@ -64,6 +67,53 @@ function getScrcpyPath() {
 if (!isDev) {
   require('./src/backend/server.js');
 }
+
+const PORT = 8383; // Match your ws-config.json port
+const wss = new WebSocket.Server({ port: PORT });
+
+wss.on('connection', (ws) => {
+  console.log('WebSocket client connected');
+
+  ws.on('message', async (message) => {
+    try {
+      const messageStr = message.toString('utf8').trim();
+      const data = JSON.parse(messageStr);
+
+      if (data.type === 'notification') {
+        const notificationData = JSON.parse(Buffer.from(data.data, 'base64').toString('utf8'));
+        console.log('Parsed notification:', notificationData);
+        // Broadcast to all connected clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'notification',
+              data: notificationData
+            }));
+          }
+        });
+        ws.send(JSON.stringify({ status: 'success', message: 'Notification received' }));
+      } else {
+        // Handle file upload
+        const { filename, filedata } = data;
+        const buffer = Buffer.from(filedata, 'base64');
+        const savePath = path.join(downloadsPath, filename);
+        await fs.mkdir(path.dirname(savePath), { recursive: true });
+        await fs.writeFile(savePath, buffer);
+        ws.send(JSON.stringify({ status: 'success', message: 'File received' }));
+        console.log(`Received and saved file: ${filename}`);
+      }
+    } catch (err) {
+      console.error('Error processing message:', err.message, err.stack);
+      ws.send(JSON.stringify({ status: 'error', message: `Error processing message: ${err.message}` }));
+    }
+  });
+
+  ws.on('error', (err) => {
+    console.error('WebSocket error:', err.message);
+  });
+});
+
+console.log(`WebSocket server running on ws://localhost:${PORT}`);
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -119,6 +169,9 @@ ipcMain.handle('save-temp-image', async (event, base64Data) => {
     throw new Error(`Failed to save clipboard image: ${error.message}`);
   }
 });
+
+
+
 
 ipcMain.handle('chatbot:ask', async (event, userMessage) => {
   try {
@@ -478,12 +531,7 @@ ipcMain.handle('adb-connect', async (event, ip, port) => {
   });
    
     let wsConfig = { ip: getWiFiIPv4(), port: 8383 };
-    console.log(wsConfig)
-    const fs =require('fs').promises
     const configPath = path.join(app.getPath('userData'), 'ws-config.json');
-
-    
-
     await fs.writeFile(configPath, JSON.stringify(wsConfig, null, 2));
     
     // Step 3: Push config file to Android device
@@ -607,7 +655,7 @@ ipcMain.handle('show-open-dialog', async () => {
 
 // Clean up active streams on app quit
 app.on('before-quit', () => {
-  const fs = require('fs')
+  wss.close();
   activeAudioStreams.forEach((process, deviceId) => {
     process.kill('SIGTERM');
   });
