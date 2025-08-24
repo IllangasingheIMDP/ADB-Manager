@@ -64,9 +64,6 @@ function getScrcpyPath() {
     return path.join(process.resourcesPath, 'bin', platformDir, platform === 'win32' ? 'scrcpy.exe' : 'scrcpy');
   }
 }
-if (!isDev) {
-  require('./src/backend/server.js');
-}
 
 const PORT = 8383; // Match your ws-config.json port
 const wss = new WebSocket.Server({ port: PORT });
@@ -74,15 +71,22 @@ const wss = new WebSocket.Server({ port: PORT });
 wss.on('connection', (ws) => {
   console.log('WebSocket client connected');
 
-  ws.on('message', async (message) => {
+  ws.on('message', (message) => {
+    // Log the raw message for debugging
+    
     try {
+      // Ensure message is a string and trim any whitespace
       const messageStr = message.toString('utf8').trim();
+      
+
       const data = JSON.parse(messageStr);
 
       if (data.type === 'notification') {
+
+        // Decode and parse notification data
         const notificationData = JSON.parse(Buffer.from(data.data, 'base64').toString('utf8'));
         console.log('Parsed notification:', notificationData);
-        // Broadcast to all connected clients
+        // Broadcast notification to all connected clients
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify({
@@ -91,20 +95,31 @@ wss.on('connection', (ws) => {
             }));
           }
         });
-        ws.send(JSON.stringify({ status: 'success', message: 'Notification received' }));
+
+
+        ws.send(JSON.stringify({
+          status: 'success',
+          message: 'Notification received'
+        }));
       } else {
         // Handle file upload
         const { filename, filedata } = data;
         const buffer = Buffer.from(filedata, 'base64');
-        const savePath = path.join(downloadsPath, filename);
-        await fs.mkdir(path.dirname(savePath), { recursive: true });
-        await fs.writeFile(savePath, buffer);
-        ws.send(JSON.stringify({ status: 'success', message: 'File received' }));
+        const savePath = path.join(os.homedir(), 'Downloads', filename);
+        fs.mkdirSync(path.dirname(savePath), { recursive: true });
+        fs.writeFileSync(savePath, buffer);
+        ws.send(JSON.stringify({
+          status: 'success',
+          message: 'File received'
+        }));
         console.log(`Received and saved file: ${filename}`);
       }
     } catch (err) {
       console.error('Error processing message:', err.message, err.stack);
-      ws.send(JSON.stringify({ status: 'error', message: `Error processing message: ${err.message}` }));
+      ws.send(JSON.stringify({
+        status: 'error',
+        message: `Error processing message: ${err.message}`
+      }));
     }
   });
 
@@ -112,7 +127,6 @@ wss.on('connection', (ws) => {
     console.error('WebSocket error:', err.message);
   });
 });
-
 console.log(`WebSocket server running on ws://localhost:${PORT}`);
 
 function createWindow() {
@@ -661,8 +675,10 @@ app.on('before-quit', () => {
   });
   activeAudioStreams.clear();
   const tempDir = path.join(app.getPath('temp'), 'connect-temp');
-  if (fs.existsSync(tempDir)) {
-    fs.rmSync(tempDir, { recursive: true, force: true });
+  // Use require('fs') for sync methods
+  const fsSync = require('fs');
+  if (fsSync.existsSync(tempDir)) {
+    fsSync.rmSync(tempDir, { recursive: true, force: true });
   }
 });
 
