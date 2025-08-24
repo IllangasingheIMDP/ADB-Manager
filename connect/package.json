@@ -10,7 +10,7 @@
   },
   "license": "ISC",
   "scripts": {
-    "start": "concurrently \"npm run start:react\" \"npm run backend:dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && electron .\"",
     "start:react": "cd src/frontend && npm run dev",
     "build": "npm run build:react && electron-builder",
     "build:windows": "npm run build:react && electron-builder --win",
