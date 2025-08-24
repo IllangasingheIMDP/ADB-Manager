@@ -106,8 +106,10 @@ wss.on('connection', (ws) => {
         const { filename, filedata } = data;
         const buffer = Buffer.from(filedata, 'base64');
         const savePath = path.join(os.homedir(), 'Downloads', filename);
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-        fs.writeFileSync(savePath, buffer);
+        // Use require('fs') for sync methods
+        const fsSync = require('fs');
+        fsSync.mkdirSync(path.dirname(savePath), { recursive: true });
+        fsSync.writeFileSync(savePath, buffer);
         ws.send(JSON.stringify({
           status: 'success',
           message: 'File received'
@@ -163,21 +165,17 @@ function createWindow() {
   
 }
 ipcMain.handle('save-temp-image', async (event, base64Data) => {
-  const fs =require('fs')
+  const fsSync = require('fs');
   try {
     const tempDir = path.join(app.getPath('temp'), 'connect-temp');
-    
     // Create temp directory if it doesn't exist
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    if (!fsSync.existsSync(tempDir)) {
+      fsSync.mkdirSync(tempDir, { recursive: true });
     }
-
     // Create temp file path
     const tempFilePath = path.join(tempDir, `clipboard_${Date.now()}.png`);
-    
     // Write the base64 data to file
-    fs.writeFileSync(tempFilePath, Buffer.from(base64Data, 'base64'));
-    
+    fsSync.writeFileSync(tempFilePath, Buffer.from(base64Data, 'base64'));
     return tempFilePath;
   } catch (error) {
     throw new Error(`Failed to save clipboard image: ${error.message}`);
